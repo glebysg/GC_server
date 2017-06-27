@@ -31,12 +31,14 @@ ALLOWED_HOSTS = ['128.46.125.51', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'vacs.apps.VacsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bootstrap3',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +50,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+USER_ROLES = (
+    'manager',
+    'expert',
+    'student',
+)
 
 ROOT_URLCONF = 'gestureclean.urls'
 
