@@ -1,18 +1,66 @@
-<!--ADD BOOTSTRAP-->
-<html>
+<html lang="en">
+    {% load static %}
+    <!--HEAD-->
     <head>
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>GestureClean System</title>
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/bootstrap.min.css' %}" />
+        <!-- Bootstrap theme -->
+        <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/bootstrap-theme.min.css' %}" />
     </head>
+    <!--END HEAD-->
+
+    <!--BODy-->
     <body>
-      <div class="hero-unit">
-        <h1>Heading</h1>
-        <p>Tagline</p>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">GestureClean - ISAT Laboratory</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container theme-showcase" role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h1>Gesture Validation System</h1>
+        <p> Login using the Blue button if you are a participant </p>
         <p>
-          <a class="btn btn-primary btn-large">
-            Learn more
-          </a>
+            <button type="button" class="btn btn-lg btn-primary">Participant Login</button>
+        </p>
+        <p>
+            <button type="button" class="btn btn-md btn-warning">Admin Login</button>
         </p>
       </div>
+
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!--<script>window.jQuery || document.write('<script src="{% static 'vacs/styles/js/sdfjquery.min.js' %}"><\/script>')</script>-->
+    <script src="{% static 'vacs/styles/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vacs/styles/js/docs.min.js' %}"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="{% static 'vacs/styles/js/ie10-viewport-bug-workaround.js' %}"></script>
     </body>
 </html>
+
+
