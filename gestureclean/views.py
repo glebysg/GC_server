@@ -18,8 +18,10 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from . import forms
 from rolepermissions.roles import get_user_roles
+from django.contrib.auth import get_user_model
+from rolepermissions.checkers import has_role
 
-
+User = get_user_model()
 
 @sensitive_post_parameters()
 @csrf_protect
@@ -29,15 +31,19 @@ def user_login(request, template_name='vacs/login.html',
 
     if request.method == "POST":
         form = forms.LoginForm(request, data=request.POST)
+
         if form.is_valid():
             # Okay, security check complete. Log the user in.
             auth_login(request, form.get_user())
-            role = get_user_roles(user)
-            if role is 'researcher':
+            user = User.objects.get(pk=form.get_user_id())
+            if has_role(user,'researcher'):
+                print "%%%%%%%%%%%%%%% R %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
-            elif role is 'participant':
+            elif has_role(user,'participant'):
+                print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
             else:
+                print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
     else:
         form = forms.LoginForm()

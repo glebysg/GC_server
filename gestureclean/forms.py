@@ -67,7 +67,13 @@ class LoginForm(forms.Form):
                     code='invalid_login',
                     params={'username': self.username_field.verbose_name},
                 )
-            else:
-                self.confirm_login_allowed(self.user_cache)
 
         return self.cleaned_data
+
+    def get_user_id(self):
+        if self.user_cache:
+            return self.user_cache.id
+        return None
+
+    def get_user(self):
+        return self.user_cache
