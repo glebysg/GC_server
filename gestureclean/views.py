@@ -17,6 +17,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from . import forms
+from rolepermissions.roles import get_user_roles
+
 
 
 @sensitive_post_parameters()
@@ -30,7 +32,13 @@ def user_login(request, template_name='vacs/login.html',
         if form.is_valid():
             # Okay, security check complete. Log the user in.
             auth_login(request, form.get_user())
-            return HttpResponseRedirect('/')
+            role = get_user_roles(user)
+            if role is 'researcher':
+                return HttpResponseRedirect('/')
+            elif role is 'participant':
+                return HttpResponseRedirect('/')
+            else:
+                return HttpResponseRedirect('/')
     else:
         form = forms.LoginForm()
 

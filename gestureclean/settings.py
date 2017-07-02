@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'widget_tweaks',
-    # 'userroles',
-    # 'bootstrap3',
+    'rolepermissions',
 ]
 
 MIDDLEWARE = [
@@ -54,11 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-USER_ROLES = (
-    'manager',
-    'expert',
-    'student',
-)
+ROLEPERMISSIONS_MODULE = 'gestureclean.roles'
 
 ROOT_URLCONF = 'gestureclean.urls'
 
