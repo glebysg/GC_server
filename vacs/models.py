@@ -4,9 +4,10 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
+from django.db import models
+from jsonfield import JSONField
+import collections
 
-# Create your models here.
-# @python_2_unicode_compatible
 class Experiment(models.Model):
     name = models.CharField(max_length=200)
     student_n = models.IntegerField(default=0,
@@ -19,43 +20,48 @@ class Experiment(models.Model):
             validators=[MinValueValidator(1)])
     is_active = models.BooleanField(default=True)
 
-# @python_2_unicode_compatible
 class Vacs(models.Model):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
-# @python_2_unicode_compatible
 class Participant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
 
-# @python_2_unicode_compatible
 class Vac(models.Model):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
-
-# @python_2_unicode_compatible
 class Evaluation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     vac = models.ForeignKey(Vac, on_delete=models.CASCADE)
     evaluation = models.CharField(max_length=100)
 
-# @python_2_unicode_compatible
 class Command(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(unique=True, max_length=4)
 
-# @python_2_unicode_compatible
 class Score(models.Model):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     vac = models.ForeignKey(Vac, on_delete=models.CASCADE)
     command = models.ForeignKey(Command, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
 
+class Assignment(models.Model):
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
+    command = models.ForeignKey(Command, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    currentLexicon = models.IntegerField(default=1,
+            validators=[MinValueValidator(1), MaxValueValidator(9)])
+    Done = models.BooleanField(default=True)
+
+class GroupAssignment(models.Model):
+    replication1 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict})
+    replication2 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict})
+    replication3 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict})
 
 
