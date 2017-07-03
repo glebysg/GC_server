@@ -39,7 +39,7 @@ def user_login(request, template_name='vacs/login.html',
             if has_role(user,'researcher'):
                 print "%%%%%%%%%%%%%%% R %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
-            elif has_role(user,'participant'):
+            elif has_role(user,['student','expert'] ):
                 print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
             else:
