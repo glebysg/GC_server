@@ -30,14 +30,14 @@ class ExperimentView(FormView):
 
 class ExperimentCreateView(CreateView):
     model = Experiment
-    success_url = reverse_lazy('experiment-list')
-    fields = ['name', 'student_n', 'expert_n', 'estudent_cmd_n', 'expert_cmd_n']
+    success_url = reverse_lazy('experiment_list')
+    fields = ['name', 'student_n', 'expert_n', 'student_cmd_n', 'expert_cmd_n']
 
 class ExperimentUpdateView(UpdateView):
     model = Experiment
-    success_url = reverse_lazy('experiment-list')
+    success_url = reverse_lazy('experiment_list')
     fields = ['is_active' ]
 
 class ExperimentDeleteView(DeleteView):
     model = Experiment
-    success_url = reverse_lazy('experiment-list')
+    success_url = reverse_lazy('experiment_list')

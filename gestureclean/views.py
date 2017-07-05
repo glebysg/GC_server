@@ -38,7 +38,7 @@ def user_login(request, template_name='vacs/login.html',
             user = User.objects.get(pk=form.get_user_id())
             if has_role(user,'researcher'):
                 print "%%%%%%%%%%%%%%% R %%%%%%%%%%%%%%%%"
-                return HttpResponseRedirect('/')
+                return HttpResponseRedirect('/vacs/experiments')
             elif has_role(user,['student','expert'] ):
                 print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
