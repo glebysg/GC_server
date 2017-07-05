@@ -19,7 +19,7 @@ class Experiment(models.Model):
     expert_cmd_n  = models.IntegerField(default=1,
             validators=[MinValueValidator(1)])
     is_active = models.BooleanField(default=True)
-    replication1 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict},
+    replications = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict},
             blank=True)
 
 class Vacs(models.Model):
@@ -58,4 +58,4 @@ class Assignment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     current_lexicon = models.IntegerField(default=1,
             validators=[MinValueValidator(1), MaxValueValidator(9)])
-    Done = models.BooleanField(default=False)
+    done = models.BooleanField(default=False)

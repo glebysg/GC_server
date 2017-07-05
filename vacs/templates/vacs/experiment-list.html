@@ -1,0 +1,16 @@
+{% extends "vacs/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+<h1>Experiments</h1>
+<ul>
+    {% for experiment in object_list %}
+    <li>{{ server.name }}:
+    <a href="{% url "experiment-edit" experiment.id %}">edit</a>
+    <a href="{% url "experiment-delete" experiment.id %}">delete</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<a href="{% url "server_new" %}">New</a>
+{% endblock %}
