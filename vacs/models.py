@@ -19,6 +19,8 @@ class Experiment(models.Model):
     expert_cmd_n  = models.IntegerField(default=1,
             validators=[MinValueValidator(1)])
     is_active = models.BooleanField(default=True)
+    replication1 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict},
+            blank=True)
 
 class Vacs(models.Model):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
@@ -42,7 +44,7 @@ class Evaluation(models.Model):
     evaluation = models.CharField(max_length=100)
 
 class Command(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(unique=True, max_length=200)
     code = models.CharField(unique=True, max_length=4)
 
 class Score(models.Model):
@@ -52,16 +54,8 @@ class Score(models.Model):
     score = models.DecimalField(max_digits=5, decimal_places=2)
 
 class Assignment(models.Model):
-    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     command = models.ForeignKey(Command, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    currentLexicon = models.IntegerField(default=1,
+    current_lexicon = models.IntegerField(default=1,
             validators=[MinValueValidator(1), MaxValueValidator(9)])
-    Done = models.BooleanField(default=True)
-
-class GroupAssignment(models.Model):
-    replication1 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict})
-    replication2 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict})
-    replication3 = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict})
-
-
+    Done = models.BooleanField(default=False)
