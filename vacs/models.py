@@ -114,7 +114,6 @@ class Assignment(models.Model):
 @receiver(post_save, sender=Experiment)
 def model_post_save(sender, instance, created,**kwargs):
     if created:
-	print ("%%%%%%%%%%%%%%%%%  Signal create  %%%%%%%%%%%%%%%%%%%%%")
 	exp_key = instance.pk
 	subj_count = 1
 	user_list = []
@@ -134,6 +133,8 @@ def model_post_save(sender, instance, created,**kwargs):
 	    subj_count += 1
 	    user_list.append(username)
 	    password_list.append(password)
+            participant = Participant(user=new_user, experiment=instance)
+            participant.save()
 	    print 'Expert {0} successfully created.'.format(username)
 	    print 'Password: '+password
 
@@ -144,12 +145,15 @@ def model_post_save(sender, instance, created,**kwargs):
 		    email="example@example.com")
 	    password = randomword(4)
 	    user.set_password(password)
+            user.experiment = instance
 	    user.save()
 	    new_user = User.objects.get(username=username)
 	    assign_role(new_user, 'student')
 	    subj_count += 1
 	    user_list.append(username)
 	    password_list.append(password)
+            participant = Participant(user=new_user, experiment=instance)
+            participant.save()
 	    print 'Student {0} successfully created.'.format(username)
 	    print 'Password: '+password
 
@@ -193,9 +197,6 @@ def model_post_save(sender, instance, created,**kwargs):
 			assignment_created = True
                         break
                 counter += 1
-                print "Counter: ", counter
-                print "Assigned: ", assigned
-                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 	    user_counter += 1
 	    replication = assigned/28
 	instance.replication = json.dumps(replications)
