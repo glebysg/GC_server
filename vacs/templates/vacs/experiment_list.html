@@ -6,8 +6,8 @@
 <ul>
     {% for experiment in object_list %}
     <li>{{ experiment.name }}:
-    <a href="{% url "experiment-edit" experiment.id %}">edit</a>
-    <a href="{% url "experiment-delete" experiment.id %}">delete</a>
+    <a href="{% url "experiment_edit" experiment.id %}">edit</a>
+    <a href="{% url "experiment_delete" experiment.id %}">delete</a>
     </li>
     {% endfor %}
 </ul>

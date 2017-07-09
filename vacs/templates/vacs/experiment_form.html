@@ -1,0 +1,49 @@
+{% extends "vacs/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+{% if form.non_field_errors %}
+    {% for error in form.non_field_errors%}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<form method="post">{% csrf_token %}
+    <div class="fieldWrapper">
+        {{ form.name.errors }}
+        <label for="{{ form.name.id_for_label }}">Name</label>
+        {{ form.name }}
+    </div>
+    <div class="fieldWrapper">
+        {{ form.student_n.errors }}
+        <label for="{{ form.student_n.id_for_label }}">Number of students</label>
+        {{ form.student_n }}
+    </div>
+
+    <div class="fieldWrapper">
+        {{ form.expert_n.errors }}
+        <label for="{{ form.expert_n.id_for_label }}">Number of experts</label>
+        {{ form.expert_n }}
+    </div>
+    <div class="fieldWrapper">
+        {{ form.student_cmd_n.errors }}
+        <label for="{{ form.student_cmd_n.id_for_label }}">Number of commands for students</label>
+        {{ form.student_cmd_n }}
+    </div>
+
+    <div class="fieldWrapper">
+        {{ form.expert_cmd_n.errors }}
+        <label for="{{ form.expert_cmd_n.id_for_label }}">Number of commands for experts</label>
+        {{ form.expert_cmd_n }}
+    </div>
+
+    <div class="fieldWrapper">
+        {{ form.is_active.errors }}
+        <label for="{{ form.is_active.id_for_label }}">Is active:</label>
+        {{ form.is_active }}
+    </div>
+    <input type="submit" value="Submit" />
+</form>
+{% endblock %}
