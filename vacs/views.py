@@ -31,7 +31,7 @@ def experiment_create(request, template_name='vacs/experiment_form.html'):
     return render(request, template_name, {'form':form, 'action':'create'})
 
 @has_role_decorator('researcher')
-def experiment_update(request, pk, template_name='servers/server_form.html'):
+def experiment_update(request, pk, template_name='vacs/experiment_form.html'):
     experiment = get_object_or_404(Experiment, pk=pk)
     form = ExperimentForm(request.POST or None, instance=experiment)
     if form.is_valid():

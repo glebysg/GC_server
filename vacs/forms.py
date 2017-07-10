@@ -11,7 +11,23 @@ class ExperimentForm(ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control',
                                      'id': 'inputName',
-                                     'placeholder': 'Experiment Name'})
+                                     'placeholder': 'Experiment Name'}),
+
+            'student_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputStudentN',
+                                     'placeholder': 'Number of students'}),
+
+            'expert_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputExpertN',
+                                     'placeholder': 'Number of Experts'}),
+
+            'student_cmd_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputStudentN',
+                                     'placeholder': 'Number of commands per student'}),
+
+            'expert_cmd_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputExpertCmdN',
+                                     'placeholder': 'Number of commands per expert'}),
         }
 
     def clean(self):

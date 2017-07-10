@@ -14,6 +14,8 @@ import collections
 import random, string
 import json
 from django.conf import settings
+from django.core.mail import send_mail
+
 
 ########################################
 ##############  GLOBALS  ###############
@@ -48,9 +50,7 @@ def create_replication():
         commands = [{ 'code': str(index) + '.'+str(sc), \
                       'pk': -1} for sc in sub_commands]
         random_commands.append(commands)
-    print random_commands
     return random_commands
-
 
 def send_email(recipient, subject, body):
     import smtplib
@@ -66,7 +66,8 @@ def send_email(recipient, subject, body):
     message = """From: %s\nTo: %s\nSubject: %s\n\n%s
     """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        # server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP("localhost ", 25)
         server.ehlo()
         server.starttls()
         server.login(gmail_user, gmail_pwd)
@@ -75,6 +76,7 @@ def send_email(recipient, subject, body):
         print 'successfully sent the mail'
     except:
         print "failed to send mail"
+
 
 ########################################
 ##############  MODELS   ###############
@@ -91,8 +93,7 @@ class Experiment(models.Model):
     expert_cmd_n  = models.IntegerField(default=1,
             validators=[MinValueValidator(1)])
     is_active = models.BooleanField(default=True)
-    replications = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict},
-            blank=True)
+    replications = models.TextField(blank=True)
     owner = models.ForeignKey(User)
 
 class Vacs(models.Model):
@@ -225,8 +226,11 @@ def model_post_save(sender, instance, created,**kwargs):
                 counter += 1
 	    user_counter += 1
 	    replication = assigned/28
-	instance.replication = json.dumps(replications)
-	instance.save()
+        experiment = Experiment.objects.get(pk=instance.pk)
+	experiment.replications = json.dumps(replications)
+        print experiment.replications
+        experiment.save()
+
 
 	# Send email to the creator with all the data
 
