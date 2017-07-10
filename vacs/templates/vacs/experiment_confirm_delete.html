@@ -1,0 +1,11 @@
+{% extends "vacs/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="jumbotron">
+    <p>Are you sure you want to delete the experiment: "{{ object.name }}" ?
+    </p>
+<form method="post" >{% csrf_token %}
+    <button class="btn btn-danger" type="submit">Delete</button>
+</form>
+</div>
+{% endblock %}

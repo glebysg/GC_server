@@ -1,15 +1,34 @@
 from django import forms
+from django.forms import ModelForm
+from vacs.models import Experiment
+from django.utils.translation import ugettext, ugettext_lazy as _
 
-class ExperimentForm(forms.Form):
-    name = forms.CharField(max_length=254,
-            widget=forms.TextInput(attrs={'class': 'form-control',
-                                          'id': 'inputName',
-                                          'placeholder': "Experiment Name"}))
-    student_n = forms.IntegerField()
-    expert_n = forms.IntegerField()
-    student_cmd_n = forms.IntegerField()
-    expert_cmd_n = forms.IntegerField()
-    is_active = forms.BooleanField()
+class ExperimentForm(ModelForm):
+    class Meta:
+        model = Experiment
+        fields = ('name','student_n','expert_n','student_cmd_n',
+                'expert_cmd_n','is_active')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control',
+                                     'id': 'inputName',
+                                     'placeholder': 'Experiment Name'}),
+
+            'student_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputStudentN',
+                                     'placeholder': 'Number of students'}),
+
+            'expert_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputExpertN',
+                                     'placeholder': 'Number of Experts'}),
+
+            'student_cmd_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputStudentN',
+                                     'placeholder': 'Number of commands per student'}),
+
+            'expert_cmd_n': forms.NumberInput(attrs={'class': 'form-control',
+                                     'id': 'inputExpertCmdN',
+                                     'placeholder': 'Number of commands per expert'}),
+        }
 
     def clean(self):
         cleaned_data = super(ExperimentForm, self).clean()
@@ -19,7 +38,7 @@ class ExperimentForm(forms.Form):
         e_cmd_n = cleaned_data.get("expert_cmd_n")
         command_number = s_n*s_cmd_n + e_n*e_cmd_n
         if command_number < 28:
-            msg = "The total number of commands to be evaluated must be\
-                  Greater than 28. Right now it's" + str(command_number)
-            self.add_error('student_n', msg)
-            self.add_error('expert_n', msg)
+            raise forms.ValidationError(
+                "The total number of commands to be evaluated must be greater than 28"
+            )
+        return self.cleaned_data

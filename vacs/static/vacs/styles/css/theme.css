@@ -1,18 +1,15 @@
-body {
-  padding-top: 70px;
-  padding-bottom: 30px;
+.form-signin {
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
 }
 
-.theme-dropdown .dropdown-menu {
-  position: static;
-  display: block;
-  margin-bottom: 20px;
+.vac-btn-group {
+    float: left;
 }
 
-.theme-showcase > p > .btn {
-  margin: 5px 0;
+.vac-hidden {
+    visibility: hidden;
+    display: none;
 }
 
-.theme-showcase .navbar .container {
-  width: auto;
-}

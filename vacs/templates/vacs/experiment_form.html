@@ -1,0 +1,95 @@
+{% extends "vacs/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+{% if action == 'create' %}
+    <h2>Create New Experiment</h2>
+{% else %}
+    <h2>Edit Experiment</h2>
+{% endif %}
+<div class="col-md-8">
+{% if form.non_field_errors %}
+    {% for error in form.non_field_errors%}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<form method="post" >{% csrf_token %}
+    <div class="form-group">
+
+        {% if form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.name.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.name.id_for_label }}">Name:</label>
+        {{ form.name }}
+    </div>
+
+    {% if action == 'update' %}
+        <div class="vac-hidden">
+    {% endif %}
+
+    <div class="form-group">
+        {% if form.student_n.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.student_n.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.student_n.id_for_label }}">Number of students</label>
+        {{ form.student_n }}
+    </div>
+
+    <div class="form-group">
+        {% if form.expert_n.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.expert_n.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.expert_n.id_for_label }}">Number of experts</label>
+        {{ form.expert_n }}
+    </div>
+    <div class="form-group">
+        {% if form.student_cmd_n.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.student_cmd_n.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.student_cmd_n.id_for_label }}">Number of commands for students</label>
+        {{ form.student_cmd_n }}
+    </div>
+
+    <div class="form-group">
+        {% if form.expert_cmd_n.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.expert_cmd_n.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.expert_cmd_n.id_for_label }}">Number of commands for experts</label>
+        {{ form.expert_cmd_n }}
+    </div>
+
+    {% if action == 'update' %}
+        </div>
+    {% endif %}
+
+    <div class="form-group">
+        {% if form.is_active.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.is_active.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.is_active.id_for_label }}">Is active:</label>
+        {{ form.is_active }}
+    </div>
+
+    {% if action == 'create' %}
+        <button class="btn btn-primary btn-block" type="submit">Create</button>
+    {% else %}
+        <button class="btn btn-info btn-block" type="submit">Edit</button>
+    {% endif %}
+</form>
+</div>
+{% endblock %}
