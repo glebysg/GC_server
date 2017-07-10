@@ -13,7 +13,7 @@ from rolepermissions.checkers import has_role
 import collections
 import random, string
 import json
-
+from django.conf import settings
 
 ########################################
 ##############  GLOBALS  ###############
@@ -52,6 +52,30 @@ def create_replication():
     return random_commands
 
 
+def send_email(recipient, subject, body):
+    import smtplib
+
+    gmail_user = 'isat.gestureclean@gmail.com'
+    gmail_pwd = 'bdrtcjoybsmmieke'
+    FROM = 'isat.gestureclean@gmail.com'
+    TO = recipient if type(recipient) is list else [recipient]
+    SUBJECT = subject
+    TEXT = body
+
+    # Prepare actual message
+    message = """From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+        server.starttls()
+        server.login(gmail_user, gmail_pwd)
+        server.sendmail(FROM, TO, message)
+        server.close()
+        print 'successfully sent the mail'
+    except:
+        print "failed to send mail"
+
 ########################################
 ##############  MODELS   ###############
 ########################################
@@ -69,6 +93,7 @@ class Experiment(models.Model):
     is_active = models.BooleanField(default=True)
     replications = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict},
             blank=True)
+    owner = models.ForeignKey(User)
 
 class Vacs(models.Model):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
@@ -118,6 +143,7 @@ def model_post_save(sender, instance, created,**kwargs):
 	subj_count = 1
 	user_list = []
 	password_list = []
+        print instance
 
 	# Create students and experts
 	for i in range(instance.expert_n):
@@ -204,5 +230,9 @@ def model_post_save(sender, instance, created,**kwargs):
 
 	# Send email to the creator with all the data
 
-
-	# Write everything in a file too
+        print instance.owner.email
+        send_email(
+            instance.owner.email,
+            'Your Experiment ' + instance.name +  ' information',
+            'Here is the message.',
+        )

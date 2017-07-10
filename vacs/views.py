@@ -24,11 +24,10 @@ def experiment_list(request, template_name='vacs/experiment_list.html'):
 def experiment_create(request, template_name='vacs/experiment_form.html'):
     form = ExperimentForm(request.POST or None)
     if form.is_valid():
-	print "FORM VALID"
+        experiment = form.save(commit=False)
+        experiment.owner = request.user
         form.save()
         return redirect('experiment_list')
-    else:
-	print "FORM NOT VALID"
     return render(request, template_name, {'form':form, 'action':'create'})
 
 @has_role_decorator('researcher')
