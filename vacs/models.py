@@ -234,7 +234,7 @@ def model_post_save(sender, instance, created,**kwargs):
         print experiment.replications
         experiment.save()
 
-	# Send email to the creator with all the data
+        # Send email to the creator with all the data
         msg = "EXPERTS:\n"
         for index in range(instance.expert_n):
             msg += str(index+1)+") username: "+user_list[index]
@@ -247,7 +247,7 @@ def model_post_save(sender, instance, created,**kwargs):
                     +user_list[instance.expert_n+index]
             msg += ", password: "+\
                     password_list[instance.expert_n+index]+"\n"
-        yag = yagmail.SMTP(settings.EMAIL_USERNAME)
+        yag = yagmail.SMTP(settings.EMAIL_USERNAME, settings.EMAIL_PASSWORD)
         subject = 'Your Experiment ' + instance.name +  ' information'
         to = instance.owner.email
         yag.send(to, subject, msg)

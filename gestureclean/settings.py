@@ -130,3 +130,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 # Email
 EMAIL_USERNAME = 'isat.gestureclean'
+EMAIL_PASSWORD = '18589873'
