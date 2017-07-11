@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from vacs.models import Experiment
+from vacs.models import Experiment, Vac
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 class ExperimentForm(ModelForm):
@@ -42,3 +42,19 @@ class ExperimentForm(ModelForm):
                 "The total number of commands to be evaluated must be greater than 28"
             )
         return self.cleaned_data
+
+
+
+class VacForm(ModelForm):
+    class Meta:
+        model = Vac
+        fields = ('name','description')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control',
+                                     'id': 'inputName',
+                                     'placeholder': 'VACs name'}),
+
+            'description': forms.Textarea(attrs={'class': 'form-control',
+                                     'id': 'inputDescription',
+                                     'placeholder': 'VACs description'}),
+        }

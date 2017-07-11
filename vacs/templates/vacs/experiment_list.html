@@ -21,7 +21,35 @@
         <h3 class="panel-title">{{ experiment.name }}</h3>
     </div>
     <div class="panel-body">
-        <div class="btn-group vac-btn-group">
+        <div class="col-md-2">
+            <strong>Experts: </strong>
+        </div>
+        <div class="col-md-10">
+            <p>{{experiment.expert_n}} experts, {{experiment.expert_cmd_n}} command(s) per expert</p>
+        </div>
+
+        <div class="col-md-2">
+            <strong>Students: </strong>
+        </div>
+        <div class="col-md-10">
+            <p>{{experiment.student_n}} students, {{experiment.student_cmd_n}} command(s) per student</p>
+        </div>
+
+        <div class="col-md-2">
+            <strong>Active: </strong>
+        </div>
+        <div class="col-md-10"><p>
+        {% if experiment.is_active %}
+            Yes
+        {% else %}
+            No
+        {% endif %}
+        </p></div>
+
+        <div class="btn-group col-md-9">
+            <a href="{% url "vac_list" experiment.id %}" class="btn btn-sm btn-success">VACs</a>
+        </div>
+        <div class="btn-group vac-btn-group col-md-3">
             <a href="{% url "experiment_edit" experiment.id %}" class="btn btn-sm btn-default">Edit</a>
             <a href="{% url "experiment_delete" experiment.id %}" class="btn btn-sm btn-danger">Delete</a>
         </div>

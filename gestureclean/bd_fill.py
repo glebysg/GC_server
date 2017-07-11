@@ -10,8 +10,8 @@ User = get_user_model()
 #  Each tuple represents the username, password, and email of a user.
 users = [
     ('glebys', 'isatlab', 'gonza337@purdue.edu'),
-    ('naveen', 'isatlab', 'gonza337@purdue.edu'),
-    ('juan', 'isatlab', 'gonza337@purdue.edu'),
+    ('naveen', 'isatlab', 'nmadapan@purdue.edu'),
+    ('juan', 'isatlab', 'jpwachs@purdue.edu'),
     ('lisa', 'utdallas', 'lisa.goffman@utdallas.edu'),
 ]
 

@@ -14,7 +14,7 @@ import collections
 import random, string
 import json
 from django.conf import settings
-from django.core.mail import send_mail
+import yagmail
 
 
 ########################################
@@ -38,7 +38,7 @@ command_code = {
 ############## FUNCTIONS ###############
 ########################################
 def randomword(length):
-   return ''.join(random.choice(string.lowercase) for i in range(length))
+    return ''.join(random.choice(string.lowercase) for i in range(length))
 
 def create_replication():
     random_groups = range(1,12)
@@ -96,19 +96,14 @@ class Experiment(models.Model):
     replications = models.TextField(blank=True)
     owner = models.ForeignKey(User)
 
-class Vacs(models.Model):
-    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
+class Vac(models.Model):
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE, related_name='vacs')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
 class Participant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
-
-class Vac(models.Model):
-    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
 
 class Evaluation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -148,7 +143,7 @@ def model_post_save(sender, instance, created,**kwargs):
 
 	# Create students and experts
 	for i in range(instance.expert_n):
-	    username = 'e'+str(exp_key)+'_s'+str(subj_count)
+	    username = 'e'+str(exp_key)+'_e'+str(i+1)
 	    user = User.objects.create_user(
 		    username=username,
 		    email="example@example.com")
@@ -166,7 +161,7 @@ def model_post_save(sender, instance, created,**kwargs):
 	    print 'Password: '+password
 
 	for i in range(instance.student_n):
-	    username = 'e'+str(exp_key)+'_s'+str(subj_count)
+	    username = 'e'+str(exp_key)+'_s'+str(i+1)
 	    user = User.objects.create_user(
 		    username=username,
 		    email="example@example.com")
@@ -194,6 +189,8 @@ def model_post_save(sender, instance, created,**kwargs):
 	user_counter = 0
 	total_assignments = instance.expert_n*instance.expert_cmd_n +\
 			    instance.student_n*instance.student_cmd_n
+        print "ASSIGNING USERS"
+        print "Total assignments: ", total_assignments
 	while (assigned <total_assignments):
 	    user = User.objects.get(
 		    username=user_list[user_counter])
@@ -203,6 +200,13 @@ def model_post_save(sender, instance, created,**kwargs):
 		command_n= instance.student_cmd_n
 	    command_counter = 0
 	    while(command_counter < command_n):
+                print "assigned: " + str(assigned)
+                print "user counter: " + str(user_counter)
+                print "counter: " + str(counter)
+                print "command_counter: " + str(command_counter)
+                print "replications: " + str(replication)
+                print "***************************************"
+                print "***************************************"
 		group_index = counter%11
 		assignment_created = False
                 full_code = replications[replication][group_index][0]['code']
@@ -221,22 +225,29 @@ def model_post_save(sender, instance, created,**kwargs):
 			elem['pk'] = assignment.pk
 			assigned += 1
                         command_counter +=1
-			assignment_created = True
+                        replication = assigned/28
                         break
                 counter += 1
 	    user_counter += 1
-	    replication = assigned/28
         experiment = Experiment.objects.get(pk=instance.pk)
 	experiment.replications = json.dumps(replications)
         print experiment.replications
         experiment.save()
 
-
 	# Send email to the creator with all the data
-
-        print instance.owner.email
-        send_email(
-            instance.owner.email,
-            'Your Experiment ' + instance.name +  ' information',
-            'Here is the message.',
-        )
+        msg = "EXPERTS:\n"
+        for index in range(instance.expert_n):
+            msg += str(index+1)+") username: "+user_list[index]
+            msg += ", password: "+password_list[index]+"\n"
+        msg += "__________________________________\n"
+        msg += "__________________________________\n"
+        msg += "STUDENTS:\n"
+        for index in range(instance.student_n):
+            msg += str(index+1)+") username: "\
+                    +user_list[instance.expert_n+index]
+            msg += ", password: "+\
+                    password_list[instance.expert_n+index]+"\n"
+        yag = yagmail.SMTP(settings.EMAIL_USERNAME)
+        subject = 'Your Experiment ' + instance.name +  ' information'
+        to = instance.owner.email
+        yag.send(to, subject, msg)

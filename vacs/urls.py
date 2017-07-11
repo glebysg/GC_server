@@ -12,4 +12,12 @@ urlpatterns = [
         views.experiment_update, name='experiment_edit'),
     url(r'^delete/(?P<pk>\d+)$',
         views.experiment_delete, name='experiment_delete'),
+    url(r'^experiments/(?P<e_pk>\d+)/evacs$',
+        views.vac_list, name='vac_list'),
+    url(r'^experiments/(?P<e_pk>\d+)/evacs/new$',
+        views.vac_create, name='vac_new'),
+    url(r'^experiments/(?P<e_pk>\d+)/evacs/edit/(?P<pk>\d+)$',
+        views.vac_update, name='vac_edit'),
+    url(r'^experiments/(?P<e_pk>\d+)/evacs/delete/(?P<pk>\d+)$',
+        views.vac_delete, name='vac_delete'),
 ]

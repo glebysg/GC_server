@@ -1,0 +1,47 @@
+{% extends "vacs/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+{% if action == 'create' %}
+    <h2>Create New VAC</h2>
+{% else %}
+    <h2>Edit VAC</h2>
+{% endif %}
+<div class="col-md-8">
+{% if form.non_field_errors %}
+    {% for error in form.non_field_errors%}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<form method="post" >{% csrf_token %}
+    <div class="form-group">
+        {% if form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.name.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.name.id_for_label }}">Name:</label>
+        {{ form.name }}
+    </div>
+
+    <div class="form-group">
+        {% if form.description.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.description.errors }}
+        </div>
+        {% endif %}
+        <label for="{{ form.description.id_for_label }}">Description:</label>
+        {{ form.description }}
+    </div>
+
+    {% if action == 'create' %}
+        <button class="btn btn-success btn-block" type="submit">Create</button>
+    {% else %}
+        <button class="btn btn-info btn-block" type="submit">Edit</button>
+    {% endif %}
+</form>
+</div>
+{% endblock %}
