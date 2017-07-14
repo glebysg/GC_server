@@ -52,30 +52,6 @@ def create_replication():
         random_commands.append(commands)
     return random_commands
 
-def send_email(recipient, subject, body):
-    import smtplib
-
-    gmail_user = 'isat.gestureclean@gmail.com'
-    gmail_pwd = 'bdrtcjoybsmmieke'
-    FROM = 'isat.gestureclean@gmail.com'
-    TO = recipient if type(recipient) is list else [recipient]
-    SUBJECT = subject
-    TEXT = body
-
-    # Prepare actual message
-    message = """From: %s\nTo: %s\nSubject: %s\n\n%s
-    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
-    try:
-        # server = smtplib.SMTP("smtp.gmail.com", 587)
-        server = smtplib.SMTP("localhost ", 25)
-        server.ehlo()
-        server.starttls()
-        server.login(gmail_user, gmail_pwd)
-        server.sendmail(FROM, TO, message)
-        server.close()
-        print 'successfully sent the mail'
-    except:
-        print "failed to send mail"
 
 
 ########################################
@@ -106,10 +82,11 @@ class Participant(models.Model):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
 class Evaluation(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
+    assignment = ForeignKey(Assignment, on_delete=models.CASCADE)
     vac = models.ForeignKey(Vac, on_delete=models.CASCADE)
-    evaluation = models.CharField(max_length=100)
+    evaluation = models.CharField(default="empty", max_length=100)
+    number = models.IntegerField()
+    unique_together = ("assignment","number","vac")
 
 class Command(models.Model):
     name = models.CharField(unique=True, max_length=200)
@@ -124,8 +101,13 @@ class Score(models.Model):
 class Assignment(models.Model):
     command = models.ForeignKey(Command, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    current_lexicon = models.IntegerField(default=1,
-            validators=[MinValueValidator(1), MaxValueValidator(9)])
+    lexicon_order = models.CharField(max_length=200)
+    current_comparison = models.IntegerField(default=0,
+            validators=[MinValueValidator(0),
+	    MaxValueValidator(15)])
+    current_vac = models.ForeignKey(Assignment,
+	on_delete=models.CASCADE, null=True, blank=True)
+    evaluated_vacs = models.ManyToManyField(Vacs, blank=True)
     done = models.BooleanField(default=False)
 
 
@@ -217,9 +199,13 @@ def model_post_save(sender, instance, created,**kwargs):
 		    pk = elem['pk']
 		    # If unassigned, assign it
 		    if pk == -1:
+                        lexicon_order = range(1,10)
+                        shuffe(lexicon_order)
+                        lexicon_order = [str(l)+',' for l in lexicon_order]
 			command = Command.objects.get(code=code)
 			assignment = Assignment.objects.create(
 			    command = command,
+                            lexicon_order = lexicon_order,
 			    user = user)
 			assignment.save()
 			elem['pk'] = assignment.pk

@@ -9,6 +9,9 @@ from vacs.models import Experiment, Vac
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator
 
+# Write a list of strings , 'a',......'i'
+# With three way comparinsons
+
 def index(request):
     template = loader.get_template('vacs/index.html')
     return HttpResponse(template.render({},request))
@@ -51,9 +54,7 @@ def experiment_delete(request, pk, template_name='vacs/experiment_confirm_delete
 @has_role_decorator('researcher')
 def vac_list(request, e_pk, template_name='vacs/vac_list.html'):
     experiment = get_object_or_404(Experiment, pk=e_pk)
-    print experiment
     vac = Vac.objects.filter(experiment_id=e_pk)
-    print vac
     data = {}
     data['object_list'] = vac
     data['experiment'] = experiment
@@ -88,3 +89,40 @@ def vac_delete(request, e_pk, pk, template_name='vacs/vac_confirm_delete.html'):
         vac.delete()
         return redirect('vac_list', e_pk)
     return render(request, template_name, {'object':vac})
+
+#create evaluation.
+@has_permission_decorator('update_evaluation')
+def experiment_update(request, a_pk, v_pk, template_name='vacs/vac_form.html'):
+    vac = get_object_or_404(Vac, pk=v_pk)
+    assignment = get_object_or_404(Assignment, pk=a_pk)
+    evaluation, created = Evaluation.objects.get_or_create(
+	assignment=assignment,
+	vac=vac,
+	number=assigment.current_comparison
+    )
+    form = EvaluationForm(request.POST or None, instance=evaluation)
+    if form.is_valid():
+        form.save()
+	# check if current comparison == 15
+	if assigment.current_comparison == 15:
+	    # reset comparison to zero 
+	    assigment.current_comparison = 0
+	    # add the current vac to the evaluated list
+	    assignment.evaluated_vacs.add(vac)
+	    # look all the vacs for this experiment,
+	    participant = Participant.objects.get(user=user)
+	    possible_vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)\
+	    	.exclude(id__in=[o.id for o in assignment.evaluated_vacs.all()])
+	    # If the list is not empty, get the first vac and add it to the assignment as current vac
+	    if possible_vacs:
+		new_vac = possible_vacs[:1].get()
+		assignment.current_vac = new_vac
+	    # If the list is empty, mark as done
+	    else:
+	    	assignment.done = True
+        else:
+	    assignment.current_comparison += 1
+	assignment.save()
+	return redirect('experiment_update',
+	    assigment.pk, assigment.current_vac.pk)
+    return render(request, template_name, {'form':form, 'action':'update'})

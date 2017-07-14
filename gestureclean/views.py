@@ -7,7 +7,7 @@ from django.contrib.auth import (
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, QueryDict
-from django.shortcuts import resolve_url
+from django.shortcuts import resolve_url, redirect
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_text
 from django.utils.http import is_safe_url, urlsafe_base64_decode
@@ -41,7 +41,28 @@ def user_login(request, template_name='vacs/login.html',
                 return HttpResponseRedirect('/vacs/experiments')
             elif has_role(user,['student','expert'] ):
                 print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
-                return HttpResponseRedirect('/')
+		# if the current vac is null, add the first one on the list
+		participant = Participant.objects.get(user=user)
+		# Get the assignments that are not done
+		assignments = Assignment.objects.filters(
+			user = user,
+			done = False
+		)
+		if assignments:
+		    # if not empty grab the first assignment
+		    assigment = assignments[:1].get()
+		    # if the current vac is null, add the first one on the list
+		    if not assignment.current_vac:
+			vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)
+			vac = vacs[:1].get()
+			assignment.current_vac = vac
+			assigment.save()
+		    return redirect('experiment_update',
+			assigment.pk, assigment.current_vac.pk)
+		else:
+		    # if empty redirect to validation
+		    # experiment.
+		    return HttpResponseRedirect('/')
             else:
                 print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
