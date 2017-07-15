@@ -81,13 +81,6 @@ class Participant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
-class Evaluation(models.Model):
-    assignment = ForeignKey(Assignment, on_delete=models.CASCADE)
-    vac = models.ForeignKey(Vac, on_delete=models.CASCADE)
-    evaluation = models.CharField(default="empty", max_length=100)
-    number = models.IntegerField()
-    unique_together = ("assignment","number","vac")
-
 class Command(models.Model):
     name = models.CharField(unique=True, max_length=200)
     code = models.CharField(unique=True, max_length=4)
@@ -105,10 +98,21 @@ class Assignment(models.Model):
     current_comparison = models.IntegerField(default=0,
             validators=[MinValueValidator(0),
 	    MaxValueValidator(15)])
-    current_vac = models.ForeignKey(Assignment,
-	on_delete=models.CASCADE, null=True, blank=True)
-    evaluated_vacs = models.ManyToManyField(Vacs, blank=True)
+    current_vac = models.ForeignKey(Vac,
+	on_delete=models.CASCADE, null=True, blank=True,
+        related_name='current_assigned')
+    evaluated_vacs = models.ManyToManyField(Vac, blank=True,
+            related_name='evaluated_assigned')
     done = models.BooleanField(default=False)
+
+class Evaluation(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    vac = models.ForeignKey(Vac, on_delete=models.CASCADE)
+    evaluation = models.CharField(default="empty", max_length=100)
+    number = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    # unique_together = ("assignment","number","vac")
 
 
 ########################################
@@ -200,7 +204,7 @@ def model_post_save(sender, instance, created,**kwargs):
 		    # If unassigned, assign it
 		    if pk == -1:
                         lexicon_order = range(1,10)
-                        shuffe(lexicon_order)
+                        random.shuffle(lexicon_order)
                         lexicon_order = [str(l)+',' for l in lexicon_order]
 			command = Command.objects.get(code=code)
 			assignment = Assignment.objects.create(

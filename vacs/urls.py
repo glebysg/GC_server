@@ -20,4 +20,6 @@ urlpatterns = [
         views.vac_update, name='vac_edit'),
     url(r'^experiments/(?P<e_pk>\d+)/evacs/delete/(?P<pk>\d+)$',
         views.vac_delete, name='vac_delete'),
+    url(r'^assignments/(?P<a_pk>\d+)/evacs/(?P<v_pk>\d+)/evaluation/new$',
+        views.evaluation_update, name='evaluation_edit'),
 ]

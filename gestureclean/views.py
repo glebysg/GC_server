@@ -20,7 +20,7 @@ from . import forms
 from rolepermissions.roles import get_user_roles
 from django.contrib.auth import get_user_model
 from rolepermissions.checkers import has_role
-
+from vacs.models import Participant, Assignment, Vac
 User = get_user_model()
 
 @sensitive_post_parameters()
@@ -44,21 +44,22 @@ def user_login(request, template_name='vacs/login.html',
 		# if the current vac is null, add the first one on the list
 		participant = Participant.objects.get(user=user)
 		# Get the assignments that are not done
-		assignments = Assignment.objects.filters(
+		assignments = Assignment.objects.filter(
 			user = user,
 			done = False
 		)
 		if assignments:
 		    # if not empty grab the first assignment
-		    assigment = assignments[:1].get()
+		    assignment = assignments[0]
 		    # if the current vac is null, add the first one on the list
 		    if not assignment.current_vac:
 			vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)
 			vac = vacs[:1].get()
 			assignment.current_vac = vac
-			assigment.save()
-		    return redirect('experiment_update',
-			assigment.pk, assigment.current_vac.pk)
+			assignment.save()
+                    print "ABOUT TO REDIRECT"
+		    return redirect('evaluation_edit',
+			assignment.pk, assignment.current_vac.pk)
 		else:
 		    # if empty redirect to validation
 		    # experiment.

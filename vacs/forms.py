@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from vacs.models import Experiment, Vac
+from vacs.models import Experiment, Vac, Evaluation
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 class ExperimentForm(ModelForm):
@@ -58,3 +58,8 @@ class VacForm(ModelForm):
                                      'id': 'inputDescription',
                                      'placeholder': 'VACs description'}),
         }
+
+class EvaluationForm(ModelForm):
+    class Meta:
+        model = Evaluation
+        fields = ('evaluation',)
