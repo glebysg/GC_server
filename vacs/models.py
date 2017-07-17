@@ -47,7 +47,7 @@ def create_replication():
     for index in random_groups:
         sub_commands = range(1,command_code[index]+1)
         random.shuffle(sub_commands)
-        commands = [{ 'code': str(index) + '.'+str(sc), \
+        commands = [{ 'code': str(index) + '_'+str(sc), \
                       'pk': -1} for sc in sub_commands]
         random_commands.append(commands)
     return random_commands
@@ -196,7 +196,7 @@ def model_post_save(sender, instance, created,**kwargs):
 		group_index = counter%11
 		assignment_created = False
                 full_code = replications[replication][group_index][0]['code']
-                group_code = int(full_code.split('.')[0])
+                group_code = int(full_code.split('_')[0])
 		for i in range(command_code[group_code]):
 		    elem = replications[replication][group_index][i]
 		    code = elem['code']
@@ -205,7 +205,7 @@ def model_post_save(sender, instance, created,**kwargs):
 		    if pk == -1:
                         lexicon_order = range(1,10)
                         random.shuffle(lexicon_order)
-                        lexicon_order = [str(l)+',' for l in lexicon_order]
+                        lexicon_order = ''.join([str(l)+',' for l in lexicon_order])
 			command = Command.objects.get(code=code)
 			assignment = Assignment.objects.create(
 			    command = command,

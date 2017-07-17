@@ -1,34 +1,182 @@
-{% extends "vacs/base.html" %}
-{% load widget_tweaks %}
-{% block content %}
-
+<!doctype html>
+<html lang="en">
 {% load static %}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-<ul id="sortable">
-  <li class="ui-state-default">1</li>
-  <li class="ui-state-default">2</li>
-  <li class="ui-state-default">3</li>
-  <li class="ui-state-default">4</li>
-  <li class="ui-state-default">5</li>
-  <li class="ui-state-default">6</li>
-  <li class="ui-state-default">7</li>
-  <li class="ui-state-default">8</li>
-  <li class="ui-state-default">9</li>
-  <li class="ui-state-default">10</li>
-  <li class="ui-state-default">11</li>
-  <li class="ui-state-default">12</li>
-</ul>
+    <title>GestureClean System</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/bootstrap.min.css' %}" />
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/bootstrap-theme.min.css' %}" />
 
-<video width="320" height="240" controls loop preload="auto">
-    <source src="{% static ('vacs/media'+'/S1/1_1.webm') %}" type="video/mp4"> Your browser does not support the video tag.
-</video>
- <form method="post">{% csrf_token %}
-    <div class="vac-hidden">
-        {{ form.as_p }}
+
+    <!--My theme -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/theme.css' %}" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <style>
+        #sortable0 {
+            list-style-type: none;
+            margin: 0; padding: 0;
+            height: 240px;
+        }
+        #sortable1, #sortable2, #sortable3 {
+            list-style-type: none;
+            margin: 0; padding: 0;
+            <!--width: 350px; height: 240px;-->
+        }
+        #sortable0 li {
+            padding: 1px; float: left;
+            text-align: center;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $( function() {
+        $( "#sortable0, ul" ).sortable({
+          connectWith: ".connectedSortable",
+            receive: function(event, ui) {
+                var $this = $(this);
+                if ($this.children('li').length > 1 && $this.attr('id') != "sortable0") {
+                    console.log('Only one per list!');
+                    $(ui.sender).sortable('cancel');
+                }
+            }
+        }).disableSelection();
+        } );
+    </script>
+</head>
+<body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+            data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">GestureClean - ISAT Laboratory</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container theme-showcase" role="main">
+
+    <div class="row">
+        <div class="col-md-1">
+            <strong> Progress: </strong>
+        </div>
+        <div class="progress col-md-11">
+            <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%"><span class="sr-only">{{ progress }}% Complete</span></div>
+        </div>
     </div>
-    <input type="submit" value="Submit" />
-</form>
+    <div class="row">
+    <div class="col-md-1"> </div>
+    <div class="col-md-10">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{command.name}}</h3>
+        </div>
+        <div class="panel-body">
+            <ul id="sortable0" class="connectedSortable">
+                {% for subject in subjects %}
+                {% with subject|stringformat:"s" as s %}
+                    {% with "vacs/media/S"|add:subject|add:"/"|add:command.code|add:".webm" as video_path %}
+                    <li id="{{ s }}"  class="ui-state-default">
+                            <video width="300" height="225" controls loop preload="auto">
+                                <source src="{% static video_path %}"
+                                type="video/mp4"> Your browser does not support the video player, use Chrome or Firefox.
+                            </video>
+                        </li>
+                    {% endwith %}
+                {% endwith %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    </div>
+    <div class="col-md-1"> </div>
+    </div>
+    <h1 class ="text-center">Order by: {{ vac.name }}</h1>
+    <div class="row">
+        <button type="button" class="btn btn-lg btn-primary vac-lbtn-group">LOW</button>
+        <button type="button" class="btn btn-lg btn-danger vac-btn-group">HIGH</button>
+    </div>
 
-{% endblock %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <ul id="sortable1" class="connectedSortable">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="well comparator1">
+        <form>
+          <input type="radio" name="gender" value="male" checked> &lt less than<br>
+          <input type="radio" name="gender" value="female"> = equal<br>
+        </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <ul id="sortable2" class="connectedSortable">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="well comparator2">
+        <form>
+          <input type="radio" name="gender" value="male" checked> &lt less than<br>
+          <input type="radio" name="gender" value="female"> = equal<br>
+        </form>
+        </div>
 
 
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <ul id="sortable3" class="connectedSortable">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+     <form method="post">{% csrf_token %}
+        <div class="vac-hidden">
+            {{ form.as_p }}
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit">Submit</button>
+    </form>
+
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>-->
+    <!--<script>window.jQuery || document.write('<script src="{% static 'vacs/styles/js/sdfjquery.min.js' %}"><\/script>')</script>-->
+    <script src="{% static 'vacs/styles/js/bootstrap.min.js' %}"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="{% static 'vacs/styles/js/ie10-viewport-bug-workaround.js' %}"></script>-->
+</body>
+</html>

@@ -8,7 +8,8 @@ from vacs.forms import ExperimentForm, VacForm, EvaluationForm
 from vacs.models import Experiment, Vac, Assignment, Evaluation, Participant, Command
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator, has_permission_decorator
-from rolepermissions.checkers import has_permission
+from rolepermissions.checkers import has_permission, has_role
+import math
 
 
 ########################################
@@ -126,6 +127,8 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 	vac=vac,
 	number=assignment.current_comparison
     )
+    participant = Participant.objects.get(user__id=request.user.pk)
+    experiment = Experiment.objects.get(pk=participant.experiment.pk)
     form = EvaluationForm(request.POST or None, instance=evaluation)
     if form.is_valid():
         form.save()
@@ -145,7 +148,7 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 		assignment.current_vac = new_vac
                 lexicon_order = range(1,10)
                 random.shuffle(lexicon_order)
-                lexicon_order = [str(l)+',' for l in lexicon_order]
+                lexicon_order = ''.join([str(l)+',' for l in lexicon_order])
                 assignment.lexicon_order = lexicon_order
 	    # If the list is empty, mark as done
 	    else:
@@ -154,13 +157,24 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 	    assignment.current_comparison += 1
 	assignment.save()
 
-	return redirect('experiment_edit',
+	return redirect('evaluation_edit',
 	    assignment.pk, assignment.current_vac.pk)
     positions = [ letters.index(elem) for elem in experimental_design[assignment.current_comparison]]
-    subjects = [assignment.lexicon_order[p] for p in positions]
+    order = assignment.lexicon_order[0].decode('utf-8')
+    print str(order).split(',')
+    subjects = [assignment.lexicon_order.split(',')[p] for p in positions]
+
+    vac_number = len(experiment.vacs.all())
+    evaluation_number = len(Evaluation.objects.filter(assignment=assignment))
+    if has_role(request.user,'expert'):
+    	hundred_percent = experiment.expert_cmd_n*16*vac_number
+    elif has_role(request.user,'student'):
+    	hundred_percent = experiment.student_cmd_n*16*vac_number
+    progress = int(math.floor(evaluation_number*100/hundred_percent))
 
     return render(request, template_name, {
         'form':form,
         'vac':vac,
         'command':assignment.command,
-        'subjects': subjects})
+        'subjects': subjects,
+	'progress': progress})
