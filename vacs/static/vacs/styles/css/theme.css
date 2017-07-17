@@ -22,7 +22,7 @@
     cursor: pointer;
     position: absolute;
     top: 650px;
-    left: 450px;
+    left: 30%;
     z-index: 1000;
 }
 
@@ -31,7 +31,7 @@
     cursor: pointer;
     position: absolute;
     top: 650px;
-    right: 450px;
+    right: 30%;
     z-index: 1000;
 }
 
