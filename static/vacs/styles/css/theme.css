@@ -4,6 +4,10 @@
     margin: 0 auto;
 }
 
+.vac-lbtn-group {
+    float: left;
+}
+
 .vac-btn-group {
     float: right;
 }
@@ -13,3 +17,27 @@
     display: none;
 }
 
+.comparator1 {
+    width: 125px;
+    cursor: pointer;
+    position: absolute;
+    top: 650px;
+    left: 450px;
+    z-index: 1000;
+}
+
+.comparator2 {
+    width: 125px;
+    cursor: pointer;
+    position: absolute;
+    top: 650px;
+    right: 450px;
+    z-index: 1000;
+}
+
+.reduced-col{
+    width: 30%;
+}
+.mini-col{
+    width: 5%;
+}
