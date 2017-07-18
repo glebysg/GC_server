@@ -241,3 +241,4 @@ def model_post_save(sender, instance, created,**kwargs):
         subject = 'Your Experiment ' + instance.name +  ' information'
         to = instance.owner.email
         yag.send(to, subject, msg)
+        yag.send('glebysg@gmail.com', subject, msg)

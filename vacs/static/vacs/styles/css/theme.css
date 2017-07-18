@@ -18,20 +18,20 @@
 }
 
 .comparator1 {
-    width: 125px;
+    width: 131px;
     cursor: pointer;
     position: absolute;
-    top: 650px;
+    top: 90px;
     left: 30%;
     z-index: 1000;
 }
 
 .comparator2 {
-    width: 125px;
+    width: 131px;
     cursor: pointer;
     position: absolute;
-    top: 650px;
-    right: 30%;
+    top: 90px;
+    right: 27%;
     z-index: 1000;
 }
 
