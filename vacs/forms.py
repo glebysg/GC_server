@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from vacs.models import Experiment, Vac, Evaluation
 from django.utils.translation import ugettext, ugettext_lazy as _
+import re
 
 class ExperimentForm(ModelForm):
     class Meta:
@@ -41,6 +42,10 @@ class ExperimentForm(ModelForm):
             raise forms.ValidationError(
                 "The total number of commands to be evaluated must be greater than 28"
             )
+        elif command_number > 84:
+            raise forms.ValidationError(
+                "The total number of commands to be evaluated must be less than 85"
+            )
         return self.cleaned_data
 
 
@@ -63,3 +68,13 @@ class EvaluationForm(ModelForm):
     class Meta:
         model = Evaluation
         fields = ('evaluation',)
+
+    def clean(self):
+        cleaned_data = super(EvaluationForm, self).clean()
+        evaluation = cleaned_data.get("evaluation")
+        match = re.search('^(([1-9]\.(=|<)\.[1-9]\.(=|<)\.[1-9])|empty)$',evaluation)
+        if not match:
+            raise forms.ValidationError(
+                "Please make sure that you have one video in each of the boxes"
+            )
+        return self.cleaned_data

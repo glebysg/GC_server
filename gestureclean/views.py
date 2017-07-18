@@ -21,6 +21,7 @@ from rolepermissions.roles import get_user_roles
 from django.contrib.auth import get_user_model
 from rolepermissions.checkers import has_role
 from vacs.models import Participant, Assignment, Vac
+from django.contrib.auth import logout
 User = get_user_model()
 
 @sensitive_post_parameters()
@@ -63,7 +64,7 @@ def user_login(request, template_name='vacs/login.html',
 		else:
 		    # if empty redirect to validation
 		    # experiment.
-		    return HttpResponseRedirect('/')
+		    return redirect('validation_index')
             else:
                 print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')
@@ -85,3 +86,8 @@ def user_login(request, template_name='vacs/login.html',
         request.current_app = current_app
 
     return TemplateResponse(request, template_name, context)
+
+
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/')

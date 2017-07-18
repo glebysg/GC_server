@@ -22,4 +22,6 @@ urlpatterns = [
         views.vac_delete, name='vac_delete'),
     url(r'^assignments/(?P<a_pk>\d+)/evacs/(?P<v_pk>\d+)/evaluation/new$',
         views.evaluation_update, name='evaluation_edit'),
+    url(r'^validations/$',
+        views.validation_index, name='validation_index'),
 ]

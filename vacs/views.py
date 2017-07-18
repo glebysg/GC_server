@@ -9,6 +9,7 @@ from vacs.models import Experiment, Vac, Assignment, Evaluation, Participant, Co
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator, has_permission_decorator
 from rolepermissions.checkers import has_permission, has_role
+from django.http import HttpResponseRedirect, QueryDict
 import math
 
 
@@ -40,7 +41,46 @@ letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 ############## FUNCTIONS ###############
 ########################################
 def index(request):
-    template = loader.get_template('vacs/index.html')
+    if request.user.is_authenticated():
+        user = request.user
+        if has_role(user,'researcher'):
+            print "%%%%%%%%%%%%%%% R %%%%%%%%%%%%%%%%"
+            return HttpResponseRedirect('/vacs/experiments')
+        elif has_role(user,['student','expert'] ):
+            print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
+            # if the current vac is null, add the first one on the list
+            participant = Participant.objects.get(user=user)
+            # Get the assignments that are not done
+            assignments = Assignment.objects.filter(
+                    user = user,
+                    done = False
+            )
+            if assignments:
+                # if not empty grab the first assignment
+                assignment = assignments[0]
+                # if the current vac is null, add the first one on the list
+                if not assignment.current_vac:
+                    vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)
+                    vac = vacs[:1].get()
+                    assignment.current_vac = vac
+                    assignment.save()
+                print "ABOUT TO REDIRECT"
+                return redirect('evaluation_edit',
+                    assignment.pk, assignment.current_vac.pk)
+            else:
+                # if empty redirect to validation
+                # experiment.
+                return redirect('validation_index')
+        else:
+            print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
+            return HttpResponseRedirect('/')
+    else:
+        template = loader.get_template('vacs/index.html')
+        return HttpResponse(template.render({},request))
+
+@has_permission_decorator('update_evaluation')
+def validation_index(request):
+    template = loader.get_template('vacs/validation_index.html')
     return HttpResponse(template.render({},request))
 
 @has_role_decorator('researcher')
@@ -130,6 +170,16 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
     participant = Participant.objects.get(user__id=request.user.pk)
     experiment = Experiment.objects.get(pk=participant.experiment.pk)
     form = EvaluationForm(request.POST or None, instance=evaluation)
+
+    assignments = Assignment.objects.filter(
+        user = request.user,
+        done = False
+    )
+    if not assignments:
+        return redirect('validation_index')
+    else:
+        print assignments
+
     if form.is_valid():
         form.save()
 	# check if current comparison == 15
@@ -139,7 +189,7 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 	    # add the current vac to the evaluated list
 	    assignment.evaluated_vacs.add(vac)
 	    # look all the vacs for this experiment,
-	    participant = Participant.objects.get(user=user)
+	    participant = Participant.objects.get(user=request.user)
 	    possible_vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)\
 	    	.exclude(id__in=[o.id for o in assignment.evaluated_vacs.all()])
 	    # If the list is not empty, get the first vac and add it to the assignment as current vac
@@ -152,13 +202,15 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
                 assignment.lexicon_order = lexicon_order
 	    # If the list is empty, mark as done
 	    else:
+                print "THE ASSIGNMENT WAS MARKED AS DONE"
 	    	assignment.done = True
         else:
 	    assignment.current_comparison += 1
 	assignment.save()
 
-	return redirect('evaluation_edit',
-	    assignment.pk, assignment.current_vac.pk)
+        return redirect('evaluation_edit',
+        assignment.pk, assignment.current_vac.pk)
+
     positions = [letters.index(elem) for elem in experimental_design[assignment.current_comparison]]
     order = assignment.lexicon_order[0].decode('utf-8')
     print str(order).split(',')
