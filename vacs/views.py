@@ -64,7 +64,7 @@ def experiment_create(request, template_name='vacs/experiment_form.html'):
 def experiment_update(request, pk, template_name='vacs/experiment_form.html'):
     experiment = get_object_or_404(Experiment, pk=pk)
     form = ExperimentForm(request.POST or None, instance=experiment)
-    if form.is_valid():current_comparison
+    if form.is_valid():
         form.save()
         return redirect('experiment_list')
     return render(request, template_name, {'form':form, 'action':'update'})
@@ -99,7 +99,7 @@ def vac_create(request, e_pk, template_name='vacs/vac_form.html'):
     return render(request, template_name, {'form':form, 'action':'create'})
 
 @has_role_decorator('researcher')
-def vac_update(request, e_pk, pk, template_ name='vacs/vac_form.html'):
+def vac_update(request, e_pk, pk, template_name='vacs/vac_form.html'):
     experiment = get_object_or_404(Experiment, pk=e_pk)
     vac = get_object_or_404(Vac, pk=pk)
     form = VacForm(request.POST or None, instance=vac)
