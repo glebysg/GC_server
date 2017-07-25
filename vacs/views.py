@@ -214,6 +214,8 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 	    else:
                 print "THE ASSIGNMENT WAS MARKED AS DONE"
 	    	assignment.done = True
+                assignment.save()
+                return redirect('index')
         else:
 	    assignment.current_comparison += 1
 	assignment.save()
@@ -227,7 +229,10 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
     subjects = [assignment.lexicon_order.split(',')[p] for p in positions]
 
     vac_number = len(experiment.vacs.all())
-    evaluation_number = len(Evaluation.objects.filter(assignment=assignment))
+    evaluation_number = 0
+    all_assignments = Assignment.objects.filter(user=request.user)
+    for a in all_assignments:
+        evaluation_number += len(Evaluation.objects.filter(assignment=a))
     if has_role(request.user,'expert'):
     	hundred_percent = experiment.expert_cmd_n*16*vac_number
     elif has_role(request.user,'student'):
