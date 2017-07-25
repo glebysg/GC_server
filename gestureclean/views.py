@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import resolve_url, redirect
 from django.template.response import TemplateResponse
+from django.shortcuts import render
 from django.utils.encoding import force_text
 from django.utils.http import is_safe_url, urlsafe_base64_decode
 from django.utils.six.moves.urllib.parse import urlparse, urlunparse
@@ -55,7 +56,12 @@ def user_login(request, template_name='vacs/login.html',
 		    # if the current vac is null, add the first one on the list
 		    if not assignment.current_vac:
 			vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)
-			vac = vacs[:1].get()
+                        try:
+                            vac = vacs[:1].get()
+                        except Vac.DoesNotExist:
+                            return render(request,
+                                'vacs/error_message.html', {
+                                'message':'Please tell the researcher to add the VACs'})
 			assignment.current_vac = vac
 			assignment.save()
                     print "ABOUT TO REDIRECT"

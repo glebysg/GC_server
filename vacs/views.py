@@ -11,6 +11,7 @@ from rolepermissions.decorators import has_role_decorator, has_permission_decora
 from rolepermissions.checkers import has_permission, has_role
 from django.http import HttpResponseRedirect, QueryDict
 import math
+import random
 
 
 ########################################
@@ -61,7 +62,12 @@ def index(request):
                 # if the current vac is null, add the first one on the list
                 if not assignment.current_vac:
                     vacs = Vac.objects.filter(experiment__id=participant.experiment.pk)
-                    vac = vacs[:1].get()
+                    try:
+                        vac = vacs[:1].get()
+                    except Vac.DoesNotExist:
+                        return render(request,
+                            'vacs/error_message.html', {
+                            'message':'Please tell the researcher to add the VACs'})
                     assignment.current_vac = vac
                     assignment.save()
                 print "ABOUT TO REDIRECT"
@@ -160,7 +166,11 @@ def vac_delete(request, e_pk, pk, template_name='vacs/vac_confirm_delete.html'):
 #create evaluation.
 @has_permission_decorator('update_evaluation')
 def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.html'):
-    vac = get_object_or_404(Vac, pk=v_pk)
+    try:
+        vac = Vac.objects.get(pk=v_pk)
+    except Vac.DoesNotExist:
+        return render(request, 'vacs/error_message.html', {
+                'message':'Please tell the researcher to add the VACs'})
     assignment = get_object_or_404(Assignment, pk=a_pk)
     evaluation, created = Evaluation.objects.get_or_create(
 	assignment=assignment,
@@ -194,7 +204,7 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 	    	.exclude(id__in=[o.id for o in assignment.evaluated_vacs.all()])
 	    # If the list is not empty, get the first vac and add it to the assignment as current vac
 	    if possible_vacs:
-		new_vac = possible_vacs[:1].get()
+		new_vac = possible_vacs[0]
 		assignment.current_vac = new_vac
                 lexicon_order = range(1,10)
                 random.shuffle(lexicon_order)
