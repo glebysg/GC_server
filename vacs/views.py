@@ -245,3 +245,34 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
         'command':assignment.command,
         'subjects': subjects,
 	'progress': progress})
+
+
+@has_role_decorator('researcher')
+def generate_scores(request, e_pk, template_name='vacs/scores.html'):
+    experiment = get_object_or_404(Experiment, pk=e_pk)
+    if request.POST:
+        # ADD SCORES
+
+        # CHANGE EXPERIMENT STATUS
+
+        # RETURN TO EXPERIMENT
+        return redirect('experiment_list')
+    participant_stats = []
+    # Get all the participants in the experiment
+    participants = Participant.objects.filter(experiment=experiment)
+    for p in participants:
+        username = p.user.username
+        vac_number = len(experiment.vacs.all())
+        evaluation_number = 0
+        all_assignments = Assignment.objects.filter(user=p.user)
+        for a in all_assignments:
+            evaluation_number += len(Evaluation.objects.filter(assignment=a))
+        if has_role(p.user,'expert'):
+            hundred_percent = experiment.expert_cmd_n*16*vac_number
+            role = 'Expert'
+        elif has_role(p.user,'student'):
+            hundred_percent = experiment.student_cmd_n*16*vac_number
+            role = 'Student'
+        participant_stats.append((username, evaluation_number, hundred_percent, role))
+    print participant_stats
+    return render(request, template_name, {'participant_stats':participant_stats})

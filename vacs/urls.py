@@ -14,6 +14,8 @@ urlpatterns = [
         views.experiment_delete, name='experiment_delete'),
     url(r'^experiments/(?P<e_pk>\d+)/evacs$',
         views.vac_list, name='vac_list'),
+    url(r'^experiments/(?P<e_pk>\d+)/scores$',
+        views.generate_scores, name='scores'),
     url(r'^experiments/(?P<e_pk>\d+)/evacs/new$',
         views.vac_create, name='vac_new'),
     url(r'^experiments/(?P<e_pk>\d+)/evacs/edit/(?P<pk>\d+)$',

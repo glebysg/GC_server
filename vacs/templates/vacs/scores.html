@@ -1,0 +1,41 @@
+{% extends "vacs/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+
+{% if errors %}
+<div class="col-md-8">
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+</div>
+{% endif %}
+
+ <div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Completed Evaluations</th>
+        <th>Total Evaluations</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    {% for user, completed, total, role in participant_stats %}
+      <tr>
+          <td> {{ user }} </td>
+          <td> {{ role }} </td>
+          <td> {{ completed }} </td>
+          <td> {{ total }} </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+<form method="post" >{% csrf_token %}
+    <button class="btn btn-primary btn-block" type="submit">Start Phase II</button>
+</form>
+</div>
+{% endblock %}

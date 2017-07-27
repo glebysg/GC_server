@@ -46,8 +46,16 @@
         {% endif %}
         </p></div>
 
+
+        {% if experiment.in_validation %}
+        <div class="col-md-12"><p>
+            <h3> In Validation Phase </h3>
+        </div>
+        {% endif %}
+
         <div class="btn-group col-md-9">
             <a href="{% url "vac_list" experiment.id %}" class="btn btn-sm btn-success">VACs</a>
+            <a href="{% url "scores" experiment.id %}" class="btn btn-sm btn-info">Validation</a>
         </div>
         <div class="btn-group vac-btn-group col-md-3">
             <a href="{% url "experiment_edit" experiment.id %}" class="btn btn-sm btn-default">Edit</a>

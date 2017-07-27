@@ -69,6 +69,7 @@ class Experiment(models.Model):
     expert_cmd_n  = models.IntegerField(default=1,
             validators=[MinValueValidator(1)])
     is_active = models.BooleanField(default=True)
+    in_validation = models.BooleanField(default=False)
     replications = models.TextField(blank=True)
     owner = models.ForeignKey(User)
 
