@@ -91,6 +91,9 @@ class Score(models.Model):
     vac = models.ForeignKey(Vac, on_delete=models.CASCADE)
     command = models.ForeignKey(Command, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
+    lexicon_number = models.IntegerField(
+            validators=[MinValueValidator(1),
+	    MaxValueValidator(9)])
 
 class Assignment(models.Model):
     command = models.ForeignKey(Command, on_delete=models.CASCADE)

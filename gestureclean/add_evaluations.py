@@ -56,9 +56,9 @@ for participant in participants:
         for vac in vacs:
             element_count = 0
             for elements in experimental_design:
-                positions = [letters.index(elem) for elem in experimental_design[assignment.current_comparison]]
-                subjects = [assignment.lexicon_order.split(',')[p] for p in positions]
-                eval_value = subjects[0] + random.choice(symbols) + subjects[1] + random.choice(symbols) + subjects[2]
+                positions = [letters.index(elem) for elem in elements]
+                eval_value = str(positions[0]) + random.choice(symbols) + \
+                        str(positions[1]) + random.choice(symbols) + str(positions[2])
                 evaluation = Evaluation.objects.create(
                         assignment = assignment,
                         vac = vac,

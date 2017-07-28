@@ -5,13 +5,14 @@ from django.http import HttpResponse
 from django.template import loader
 from django.core.urlresolvers import reverse_lazy
 from vacs.forms import ExperimentForm, VacForm, EvaluationForm
-from vacs.models import Experiment, Vac, Assignment, Evaluation, Participant, Command
+from vacs.models import Experiment, Vac, Assignment, Evaluation, Participant, Command, Score
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator, has_permission_decorator
 from rolepermissions.checkers import has_permission, has_role
 from django.http import HttpResponseRedirect, QueryDict
 import math
 import random
+from vacs.utils import Order
 
 
 ########################################
@@ -250,16 +251,10 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
 @has_role_decorator('researcher')
 def generate_scores(request, e_pk, template_name='vacs/scores.html'):
     experiment = get_object_or_404(Experiment, pk=e_pk)
-    if request.POST:
-        # ADD SCORES
-
-        # CHANGE EXPERIMENT STATUS
-
-        # RETURN TO EXPERIMENT
-        return redirect('experiment_list')
     participant_stats = []
     # Get all the participants in the experiment
     participants = Participant.objects.filter(experiment=experiment)
+    not_complete = False
     for p in participants:
         username = p.user.username
         vac_number = len(experiment.vacs.all())
@@ -273,6 +268,44 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
         elif has_role(p.user,'student'):
             hundred_percent = experiment.student_cmd_n*16*vac_number
             role = 'Student'
+        if hundred_percent > evaluation_number:
+            not_complete = True
         participant_stats.append((username, evaluation_number, hundred_percent, role))
+    if request.POST:
+        if not_complete:
+            return render(request, template_name, {
+                'participant_stats':participant_stats,
+                'error':'Every subject needs to complete the task before starting part II'})
+        # ADD SCORES
+        names_list = ['1','2','3','4', '5', '6', '7', '8', '9']
+        for p in participants:
+            username = p.user.username
+            all_vacs = experiment.vacs.all()
+            all_assignments = Assignment.objects.filter(user=p.user)
+            for a in all_assignments:
+                for v in all_vacs:
+                    evaluations = Evaluation.objects.filter(assignment=a, vac=v)
+                    evaluation_list = []
+                    for e in evaluations:
+                        clean_evaluation = e.evaluation.replace(".", "")
+                        evaluation_list.append(clean_evaluation)
+                    ord = Order(names_list, evaluation_list)
+                    [global_order, ineq, scores] = ord.get_all()
+                    # Create Scores
+                    for index in range(len(global_order)):
+                        lexicon_number = int(global_order[index])
+                        score = Score.objects.get_or_create(
+                            experiment = experiment,
+                            vac = v,
+                            command = a.command,
+                            score = scores[index],
+                            lexicon_number = lexicon_number
+                        )
+                        score.save()
+        # CHANGE EXPERIMENT STATUS
+        experiment.in_validation = True
+        experiment.save()
+        # RETURN TO EXPERIMENT
+        return redirect('experiment_list')
     print participant_stats
     return render(request, template_name, {'participant_stats':participant_stats})
