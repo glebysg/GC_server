@@ -107,17 +107,14 @@ class Order:
 
         if self.glob_ineq.count('<') == 0:
             self.glob_scores = [1.0 for xx in range(len(self.glob_order))]
-
-        print self.names_list
-        print self.relations
-        print(self.glob_ineq.count('<'))
-        incr = 1.0/self.glob_ineq.count('<')
-        self.glob_scores = [0]
-        for idx in range(len(self.glob_ineq)):
-            if self.glob_ineq[idx] == '=':
-                self.glob_scores.append(self.glob_scores[idx])
-            elif self.glob_ineq[idx] == '<':
-                self.glob_scores.append(self.glob_scores[idx]+incr)
+        else:
+            incr = 1.0/self.glob_ineq.count('<')
+            self.glob_scores = [0]
+            for idx in range(len(self.glob_ineq)):
+                if self.glob_ineq[idx] == '=':
+                    self.glob_scores.append(self.glob_scores[idx])
+                elif self.glob_ineq[idx] == '<':
+                    self.glob_scores.append(self.glob_scores[idx]+incr)
 
         self.glob_scores = [float('%.2f'% item) for item in self.glob_scores]
 

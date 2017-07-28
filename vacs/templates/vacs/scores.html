@@ -12,9 +12,12 @@
 </div>
 {% endif %}
 
-<form method="post" >{% csrf_token %}
+{% if not experiment.in_validation %}
+<form method="post">{% csrf_token %}
     <button class="btn btn-primary btn-block" type="submit">Start Phase II</button>
 </form>
+{% endif %}
+
  <div class="table-responsive">
   <table class="table">
     <thead>

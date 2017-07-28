@@ -275,6 +275,7 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
         if not_complete:
             return render(request, template_name, {
                 'participant_stats':participant_stats,
+                'experiment': experiment,
                 'error':'Every subject needs to complete the task before starting part II'})
         # ADD SCORES
         names_list = ['1','2','3','4', '5', '6', '7', '8', '9']
@@ -294,7 +295,7 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
                     # Create Scores
                     for index in range(len(global_order)):
                         lexicon_number = int(global_order[index])
-                        score = Score.objects.get_or_create(
+                        score, created = Score.objects.get_or_create(
                             experiment = experiment,
                             vac = v,
                             command = a.command,
@@ -308,4 +309,5 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
         # RETURN TO EXPERIMENT
         return redirect('experiment_list')
     print participant_stats
-    return render(request, template_name, {'participant_stats':participant_stats})
+    return render(request, template_name, {'participant_stats':participant_stats,
+        'experiment':experiment})
