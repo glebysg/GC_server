@@ -71,6 +71,7 @@ class Experiment(models.Model):
     is_active = models.BooleanField(default=True)
     in_validation = models.BooleanField(default=False)
     replications = models.TextField(blank=True)
+    val_replications = models.TextField(blank=True)
     owner = models.ForeignKey(User)
 
 class Vac(models.Model):
@@ -107,6 +108,20 @@ class Assignment(models.Model):
         related_name='current_assigned')
     evaluated_vacs = models.ManyToManyField(Vac, blank=True,
             related_name='evaluated_assigned')
+    done = models.BooleanField(default=False)
+
+
+class ValAssignment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    command = models.ForeignKey(Command, on_delete=models.CASCADE)
+    lexicon_number = models.IntegerField(
+            validators=[MinValueValidator(1),
+	    MaxValueValidator(9)])
+    current_vac = models.ForeignKey(Vac,
+	on_delete=models.CASCADE, null=True, blank=True,
+        related_name='current_val_assigned')
+    evaluated_vacs = models.ManyToManyField(Vac, blank=True,
+            related_name='evaluated_val_assigned')
     done = models.BooleanField(default=False)
 
 class Evaluation(models.Model):

@@ -5,13 +5,16 @@ from django.http import HttpResponse
 from django.template import loader
 from django.core.urlresolvers import reverse_lazy
 from vacs.forms import ExperimentForm, VacForm, EvaluationForm
-from vacs.models import Experiment, Vac, Assignment, Evaluation, Participant, Command, Score
+from vacs.models import Experiment, Vac, Assignment, ValAssignment, Evaluation, Participant, Command, Score
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator, has_permission_decorator
 from rolepermissions.checkers import has_permission, has_role
 from django.http import HttpResponseRedirect, QueryDict
 import math
 import random
+import pprint as pp
+import json
+import copy
 from vacs.utils import Order
 
 
@@ -39,8 +42,45 @@ experimental_design = [
 
 letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 
+command_code = {
+    1:2,
+    2:2,
+    3:2,
+    4:2,
+    5:4,
+    6:4,
+    7:2,
+    8:2,
+    9:2,
+    10:4,
+    11:2,
+}
+
 ########################################
 ############## FUNCTIONS ###############
+########################################
+def create_replication():
+    random_groups = range(1,12)
+    random.shuffle(random_groups)
+    random_commands = []
+    for index in random_groups:
+        sub_commands = range(1,command_code[index]+1)
+        random.shuffle(sub_commands)
+        commands = []
+        for sc in sub_commands:
+            lexicons = range(1,10)
+            random.shuffle(lexicons)
+            lexicon_group = []
+            for l in lexicons:
+                lexicon_item = {'code': str(index) + '_'+str(sc) + '_'+ str(l),
+                        'pk': -1}
+                lexicon_group.append(lexicon_item)
+            commands.append(lexicon_group)
+        random_commands.append(commands)
+    return random_commands
+
+########################################
+##############   VIEWS   ###############
 ########################################
 def index(request):
     if request.user.is_authenticated():
@@ -305,7 +345,73 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
                         score.save()
         # CHANGE EXPERIMENT STATUS
         experiment.in_validation = True
+
+        # CREATE PHASE II ASIGNMENTS
+	# Assign the gestures to the experts
+	replications = [create_replication(),create_replication(),create_replication()]
+        replications_del = copy.deepcopy(replications)
+	assigned = 0
+	counter = 0
+	replication = 0
+	user_counter = 0
+	total_assignments = experiment.expert_n*experiment.expert_cmd_n*9 +\
+			    experiment.student_n*experiment.student_cmd_n*9
+
+        print "ASSIGNING USERS FOR VALIDATION"
+        print "Total assignments: ", total_assignments
+        print "#################################"
+	while (assigned <total_assignments):
+	    user = participants[user_counter].user
+	    if has_role(user,'expert'):
+		command_n= experiment.expert_cmd_n*9
+	    else:
+		command_n= experiment.student_cmd_n*9
+	    command_counter = 0
+	    while(command_counter < command_n):
+                # print "assigned: " + str(assigned)
+                # print "user counter: " + str(user_counter)
+                # print "counter: " + str(counter)
+                # print "command_counter: " + str(command_counter)
+                # print "replications: " + str(replication)
+                # print "***************************************"
+                # print "***************************************"
+		group_index = counter%11
+		assignment_created = False
+                # Search for the sub-command that has the least assignments
+                sub_cds_len = [len(sc) for sc in replications_del[replication][group_index]]
+                max_len = max(sub_cds_len)
+                if max_len != 0:
+                    i_del = sub_cds_len.index(max_len)
+                    full_code = replications_del[replication][group_index][i_del][0]['code']
+                    split_code = full_code.split('_')
+                    code_del = split_code[0]+"_"+split_code[1]
+                    lexicon_index = None
+                    for i, item in enumerate(replications[replication][group_index][i_del]):
+                        if item['code'] == full_code:
+                            lexicon_index = i
+                            break
+                    # create the assignment for validation 
+                    command = Command.objects.get(code=code_del)
+                    assignment = ValAssignment.objects.create(
+                        command = command,
+                        lexicon_number = split_code[2],
+                        user = user)
+                    assignment.save()
+                    del replications_del[replication][group_index][i_del][0]
+                    # Assign in the replication
+                    replications[replication][group_index][i_del][lexicon_index]['pk'] = assignment.pk
+                    assigned += 1
+                    command_counter +=1
+                    replication = assigned/(28*9)
+                counter += 1
+	    user_counter += 1
+	experiment.val_replications = json.dumps(replications)
+        # print "#################################"
+        # pp.pprint(replications)
+        # print "#################################"
+        # pp.pprint(replications_del)
         experiment.save()
+
         # RETURN TO EXPERIMENT
         return redirect('experiment_list')
     print participant_stats
