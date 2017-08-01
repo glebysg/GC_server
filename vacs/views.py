@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
 from django.core.urlresolvers import reverse_lazy
-from vacs.forms import ExperimentForm, VacForm, EvaluationForm
+from vacs.forms import ExperimentForm, VacForm, EvaluationForm, ValidationForm
 from vacs.models import Experiment, Vac, Assignment, ValAssignment, Evaluation, Participant, Command, Score, Validation
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator, has_permission_decorator
@@ -444,8 +444,8 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
         'experiment':experiment})
 
 @has_permission_decorator('update_evaluation')
-def validation_edit(request):
-    template = loader.get_template(request, a_pk, s_pk, template_name='vacs/validation_form.html')
+def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.html'):
+    template = loader.get_template(template_name)
     assignment = ValAssignment.objects.get(pk=a_pk)
     score = Score.objects.get(pk=s_pk)
     participant = Participant.objects.get(user__id=request.user.pk)
@@ -516,8 +516,9 @@ def validation_edit(request):
 
     vac_number = len(Vac.objects.filter(experiment=experiment))
     all_assignments = ValAssignment.objects.filter(user=request.user)
+    validation_number = 0
     for a in all_assignments:
-        validation_number += len(a.evaluated_scores)
+        validation_number += len(a.evaluated_scores.all())
     if has_role(request.user,'expert'):
     	hundred_percent = experiment.expert_cmd_n*9*vac_number
     elif has_role(request.user,'student'):
@@ -530,6 +531,8 @@ def validation_edit(request):
         'command': assignment.command,
         'score': score,
         'vac': score.vac,
+        'range': range(1,10),
+        'thermometer_value': score.score*100,
         'progress': progress})
 
 @has_permission_decorator('update_evaluation')

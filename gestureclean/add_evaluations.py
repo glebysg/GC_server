@@ -1,5 +1,5 @@
 import sys
-from vacs.models import Command, Experiment, Vac, Evaluation, Assignment, Participant
+from vacs.models import Command, Experiment, Vac, Evaluation, Assignment, Participant, Score
 from django.contrib.auth import get_user_model
 import random
 
@@ -66,3 +66,5 @@ for participant in participants:
                         number = element_count)
                 evaluation.save()
                 element_count +=1
+        assignment.done = True
+        assignment.save()

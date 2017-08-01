@@ -126,7 +126,7 @@ def get_critical_score(scores):
     score_model = None
     for score in scores:
         if score.score > 0.5:
-            distance = 1.0-score.score
+            distance = 1.0-float(score.score)
         else:
             distance = score.score
         if distance < min_distance:

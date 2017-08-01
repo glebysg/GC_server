@@ -23,51 +23,6 @@
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/image-picker.min.js"></script>
-    <script>
-        function thermometer(goalAmount, progressAmount, animate) {
-            "use strict";
-            var $thermo = $("#thermometer"),
-                $progress = $(".progress", $thermo),
-                $goal = $(".goal", $thermo),
-                percentageAmount;
-
-            goalAmount = goalAmount || parseFloat($goal.text()),
-            progressAmount = progressAmount || parseFloat($progress.text()),
-            percentageAmount = Math.min(Math.round(progressAmount / goalAmount * 1000) / 10, 100); //make sure we have 1 decimal point
-
-            $goal.find(".amount").text();
-            $progress.find(".amount").text();
-
-            $progress.find(".amount").hide();
-            if (animate !== false) {
-                $progress.animate({
-                    "height": percentageAmount + "%"
-                }, 1200, function () {
-                    $(this).find(".amount").fadeIn(200);
-                });
-            } else {
-                $progress.css({
-                    "height": percentageAmount + "%"
-                });
-                $progress.find(".amount").fadeIn(200);
-            }
-        }
-
-        $(document).ready(function () {
-
-            thermometer();
-        });
-    <script>
-    {% if last %}
-        <script>
-            $("select").imagepicker({limit: 1})
-        </script>
-    {% else %}
-        <script>
-            $("select").imagepicker()
-        </script>
-    {% endif %}
     <script>
         $(document).on('click', '#submit_button', function (e) {
             console.log("ENTERED IN THE SUBMIT")
@@ -92,6 +47,13 @@
                 $('#form_evaluation').submit();
             }
             return false;
+        });
+    </script>
+    <script>
+        $(function() {
+            $("#selectable").bind("mousedown", function(e) {
+                e.metaKey = true;
+            }).selectable();
         });
     </script>
 </head>
@@ -124,48 +86,54 @@
         <div class="col-md-1">
             <strong> Progress: </strong>
         </div>
-        <div class="progress col-md-11">
+        <div class="progress col-md-9">
             <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%"><span class="sr-only">{{ progress }}% Complete</span></div>
         </div>
     </div>
-    <h1 class ="text-center">Select the gestures you think correspond to: {{ vac.name }}: assignment.current</h1>
+
+    <div class="col-md-9">
+        <h3 class ="text-center">Select the gestures you think correspond to:</h3>
+        <h3 class="text-center"><strong>{{ vac.name }}:</strong> {{score.score}}</h2>
+    </div>
     <div class="row">
-        <div class="col-md-11">
+        <div class="col-md-10">
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title">{{command.name}}</h3>
                 </div>
                 <div class="panel-body">
-                <select class="image-picker show-html" multiple="multiple">
-                {% for subject in range(1,10) %}
+                <div id="selectable">
+                {% for subject in range %}
                     {% with subject|stringformat:"s" as s %}
-                        {% with "vacs/media/S"|add:subject|add:"/"|add:command.code|add:".webm" as video_path %}
-                        <option  value="{{ subject }}">
-                        <div class=col-md-4>
-                            <video width="300" height="225" controls loop preload="auto">
+                        {% with "vacs/media/S"|add:s|add:"/"|add:command.code|add:".webm" as video_path %}
+                        <div id="{{s}}" class="col-md-4 ui-widget-content">
+                            <video width="280" height="210" controls loop preload="auto">
                                 <source src="{% static video_path %}"
                                 type="video/mp4"> Your browser does not support the video player, use Chrome or Firefox.
                             </video>
                         </div>
-                        </option>
                         {% endwith %}
                     {% endwith %}
                 {% endfor %}
-                </select>
+                </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-1">
-            <div id="thermometer">
-                <div class="track">
-                    <div class="goal">
-                        <div class="amount" id="goalAmount">1</div>
-                    </div>
-                <div class="progress">
-                    <div style="display: block;" class="amount" id="progessAmount">{{score.score}}</div>
-                </div>
-                <div class="bulb"><div class="inner-bulb"></div></div>
-                </div>
+        <div class="col-md-2">
+            <div class="donation-meter">
+              <strong class="goal">{{vac.name}}</strong>
+              <br> <br>
+              <span class="glass">
+                  <strong class="total" style="bottom: {{ thermometer_value }}%">{{ score.score }}</strong>
+                  <strong class="total line_thermometer" style="bottom: {{ thermometer_value }}%">______</strong>
+                  <span class="amount" style="height: {{ thermometer_value }}%"></span>
+              </span>
+              <div class="bulb">
+                  <span class="red-circle"></span>
+                  <span class="filler">
+                      <span></span>
+                  </span>
+              </div>
             </div>
         </div>
     </div>
@@ -174,7 +142,10 @@
         <div class="vac-hidden">
             {{ form.as_p }}
         </div>
-        <button id="submit_button" class="btn btn-primary btn-block" type="button">Submit</button>
+
+        <div class="col-md-10">
+            <button id="submit_button" class="btn btn-primary btn-block" type="button">Submit</button>
+        </div>
     </form>
 
     {% if form.non_field_errors %}

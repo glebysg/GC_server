@@ -21,7 +21,7 @@ from . import forms
 from rolepermissions.roles import get_user_roles
 from django.contrib.auth import get_user_model
 from rolepermissions.checkers import has_role
-from vacs.models import Participant, Assignment, ValAssignment, Vac
+from vacs.models import Participant, Assignment, ValAssignment, Vac, Score
 from django.contrib.auth import logout
 from vacs.utils import get_critical_score
 User = get_user_model()
