@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.core.urlresolvers import reverse_lazy
 from vacs.forms import ExperimentForm, VacForm, EvaluationForm
-from vacs.models import Experiment, Vac, Assignment, ValAssignment, Evaluation, Participant, Command, Score
+from vacs.models import Experiment, Vac, Assignment, ValAssignment, Evaluation, Participant, Command, Score, Validation
 from django.shortcuts import render, redirect, get_object_or_404
 from rolepermissions.decorators import has_role_decorator, has_permission_decorator
 from rolepermissions.checkers import has_permission, has_role
@@ -114,9 +114,38 @@ def index(request):
                 print "ABOUT TO REDIRECT"
                 return redirect('evaluation_edit',
                     assignment.pk, assignment.current_vac.pk)
+            elif participant.experiment.in_validation:
+                # if experiment ready for validation
+                val_assignments = ValAssignment.objects.filter(
+                        user = user,
+                        done = False
+                )
+                if val_assignments:
+                    # if not empty grab the first assignment
+                    val_assignment = val_assignments[0]
+                    # if the current score is null, add the vac that is closest to the list 
+                    if not val_assignment.current_score:
+                        vacs = Score.objects.filter(experiment__id=participant.experiment.pk)
+                        try:
+                            vac = vacs[:1].get()
+                        except Vac.DoesNotExist:
+                            return render(request,
+                                'vacs/error_message.html', {
+                                'message':'Please tell the researcher to add the VACs'})
+                        # Get the current score
+                        scores = Score.objects.filter(experiment=experiment,
+                                command=val_assignment.command, lexicon_number=val_assignment.lexicon_number)
+                        score = get_critical_score(scores)
+                        val_assignment.current_score = score
+                        val_assignment.save()
+                    return redirect('validation_edit',
+                        val_assignment.pk, val_assignment.current_score.pk)
+                else:
+                    return redirect('finished')
+
             else:
-                # if empty redirect to validation
-                # experiment.
+                # if empty but not in validation
+                # redirect to waiting mesage
                 return redirect('validation_index')
         else:
             print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
@@ -125,10 +154,6 @@ def index(request):
         template = loader.get_template('vacs/index.html')
         return HttpResponse(template.render({},request))
 
-@has_permission_decorator('update_evaluation')
-def validation_index(request):
-    template = loader.get_template('vacs/validation_index.html')
-    return HttpResponse(template.render({},request))
 
 @has_role_decorator('researcher')
 def experiment_list(request, template_name='vacs/experiment_list.html'):
@@ -227,7 +252,7 @@ def evaluation_update(request, a_pk, v_pk, template_name='vacs/evaluation_form.h
         done = False
     )
     if not assignments:
-        return redirect('validation_index')
+        return redirect('index')
     else:
         print assignments
 
@@ -417,3 +442,102 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
     print participant_stats
     return render(request, template_name, {'participant_stats':participant_stats,
         'experiment':experiment})
+
+@has_permission_decorator('update_evaluation')
+def validation_edit(request):
+    template = loader.get_template(request, a_pk, s_pk, template_name='vacs/validation_form.html')
+    assignment = ValAssignment.objects.get(pk=a_pk)
+    score = Score.objects.get(pk=s_pk)
+    participant = Participant.objects.get(user__id=request.user.pk)
+    experiment = Experiment.objects.get(pk=participant.experiment.pk)
+    if not experiment.in_validation:
+        val_indextemplate = loader.get_template('vacs/validation_index.html')
+        return HttpResponse(val_indextemplate.render({},request))
+    validation, created = Validation.objects.get_or_create(
+	score=score,
+    )
+    form = ValidationForm(request.POST or None, instance=validation)
+    assignments = ValAssignment.objects.filter(
+        user = request.user,
+        done = False
+    )
+    if not assignments:
+        return redirect('index')
+    else:
+        print assignments
+
+    if form.is_valid():
+        form.save()
+        # Add the curret score to the val assigment
+        assignment.evaluated_scores.add(score)
+        assignment.save()
+
+        # get all the non-validated scores associated with the val assignment
+        scores_to_validate = Scores.objects.get(
+            experiment = experiment,
+            command = assignment.command,
+            lexicon_number = assignment.lexicon_number
+            ).excude(id__in=[o.id for o in assignment.evaluated_scores.all()])
+
+        # if its not empty
+        if scores_to_validate:
+            # Associate the most critical score that has not
+            # been validated
+            new_score = get_critical_score(scores)
+            assignment.current_score = new_score
+            assignment.save()
+            redirect_assignment = assignment
+
+        # if there are no scores
+        else:
+            # mark assignment as done
+            assignment.done = True
+            # get the first assignment that is not 
+            # done associated with the user
+            assignments = ValAssignment.objects.filter(
+                user = request.user,
+                done = False
+            )
+            redirect_assignment = assignments[0]
+            # Associate the most critical score that has not
+            # been validated
+            scores = Scores.objects.get(
+                experiment = experiment,
+                command = redirect_assignment.command,
+                lexicon_number = redirect_assignment.lexicon_number
+                ).excude(id__in=[o.id for o in redirect_assignment.evaluated_scores.all()])
+            new_score = get_critical_score(scores)
+            redirect_assignment.current_score = new_score
+            redirect_assignment.save()
+        # Redirect to the valdation with a new assignment
+        # and its current score
+        return redirect('evaluation_edit',
+        redirect_assignment.pk, redirect_assignment.current_vac.pk)
+
+    vac_number = len(Vac.objects.filter(experiment=experiment))
+    all_assignments = ValAssignment.objects.filter(user=request.user)
+    for a in all_assignments:
+        validation_number += len(a.evaluated_scores)
+    if has_role(request.user,'expert'):
+    	hundred_percent = experiment.expert_cmd_n*9*vac_number
+    elif has_role(request.user,'student'):
+    	hundred_percent = experiment.student_cmd_n*9*vac_number
+    progress = int(math.floor(validation_number*100/hundred_percent))
+
+    return render(request, template_name, {
+        'form':form,
+        'assignment':assignment,
+        'command': assignment.command,
+        'score': score,
+        'vac': score.vac,
+        'progress': progress})
+
+@has_permission_decorator('update_evaluation')
+def validation_index(request):
+    template = loader.get_template('vacs/validation_index.html')
+    return HttpResponse(template.render({},request))
+
+@has_permission_decorator('update_evaluation')
+def finished(request):
+    template = loader.get_template('vacs/finished.html')
+    return HttpResponse(template.render({},request))

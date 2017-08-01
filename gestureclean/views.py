@@ -21,8 +21,9 @@ from . import forms
 from rolepermissions.roles import get_user_roles
 from django.contrib.auth import get_user_model
 from rolepermissions.checkers import has_role
-from vacs.models import Participant, Assignment, Vac
+from vacs.models import Participant, Assignment, ValAssignment, Vac
 from django.contrib.auth import logout
+from vacs.utils import get_critical_score
 User = get_user_model()
 
 @sensitive_post_parameters()
@@ -45,6 +46,7 @@ def user_login(request, template_name='vacs/login.html',
                 print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
 		# if the current vac is null, add the first one on the list
 		participant = Participant.objects.get(user=user)
+		experiment = participant.experiment
 		# Get the assignments that are not done
 		assignments = Assignment.objects.filter(
 			user = user,
@@ -67,10 +69,39 @@ def user_login(request, template_name='vacs/login.html',
                     print "ABOUT TO REDIRECT"
 		    return redirect('evaluation_edit',
 			assignment.pk, assignment.current_vac.pk)
-		else:
-		    # if empty redirect to validation
-		    # experiment.
-		    return redirect('validation_index')
+                elif experiment.in_validation:
+                    # if experiment ready for validation
+                    val_assignments = ValAssignment.objects.filter(
+                            user = user,
+                            done = False
+                    )
+                    if val_assignments:
+                        # if not empty grab the first assignment
+                        val_assignment = val_assignments[0]
+                        # if the current score is null, add the vac that is closest to the list 
+                        if not val_assignment.current_score:
+                            vacs = Score.objects.filter(experiment__id=participant.experiment.pk)
+                            try:
+                                vac = vacs[:1].get()
+                            except Vac.DoesNotExist:
+                                return render(request,
+                                    'vacs/error_message.html', {
+                                    'message':'Please tell the researcher to add the VACs'})
+                            # Get the current score
+                            scores = Score.objects.filter(experiment=experiment,
+                                    command=val_assignment.command, lexicon_number=val_assignment.lexicon_number)
+                            score = get_critical_score(scores)
+                            val_assignment.current_score = score
+                            val_assignment.save()
+                        return redirect('validation_edit',
+                            val_assignment.pk, val_assignment.current_score.pk)
+                    else:
+                        return redirect('finished')
+
+                else:
+                    # if empty but not in validation
+                    # redirect to waiting mesage
+                    return redirect('validation_index')
             else:
                 print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
                 return HttpResponseRedirect('/')

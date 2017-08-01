@@ -24,6 +24,10 @@ urlpatterns = [
         views.vac_delete, name='vac_delete'),
     url(r'^assignments/(?P<a_pk>\d+)/evacs/(?P<v_pk>\d+)/evaluation/new$',
         views.evaluation_update, name='evaluation_edit'),
+    url(r'^valassignments/(?P<a_pk>\d+)/scores/(?P<s_pk>\d+)/validation/new$',
+        views.validation_edit, name='validation_edit'),
     url(r'^validations/$',
         views.validation_index, name='validation_index'),
+    url(r'^finished/$',
+        views.finished, name='finished'),
 ]

@@ -119,3 +119,17 @@ class Order:
         self.glob_scores = [float('%.2f'% item) for item in self.glob_scores]
 
         #return [self.glob_order, self.glob_ineq, self.glob_scores]
+
+def get_critical_score(scores):
+    min_distance = 1
+    distance = 0
+    score_model = None
+    for score in scores:
+        if score.score > 0.5:
+            distance = 1.0-score.score
+        else:
+            distance = score.score
+        if distance < min_distance:
+            score_model = score
+    return score_model
+

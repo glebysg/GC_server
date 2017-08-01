@@ -117,10 +117,10 @@ class ValAssignment(models.Model):
     lexicon_number = models.IntegerField(
             validators=[MinValueValidator(1),
 	    MaxValueValidator(9)])
-    current_vac = models.ForeignKey(Vac,
+    current_score = models.ForeignKey(Score,
 	on_delete=models.CASCADE, null=True, blank=True,
         related_name='current_val_assigned')
-    evaluated_vacs = models.ManyToManyField(Vac, blank=True,
+    evaluated_scores = models.ManyToManyField(Score, blank=True,
             related_name='evaluated_val_assigned')
     done = models.BooleanField(default=False)
 
@@ -132,6 +132,16 @@ class Evaluation(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     # unique_together = ("assignment","number","vac")
+
+class Validation(models.Model):
+    score = models.OneToOneField(
+        Score,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    selected_lexicons = models.CharField(max_length=100, default='empty')
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
 
 ########################################

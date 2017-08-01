@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>GestureClean System</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/bootstrap.min.css' %}" />
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/bootstrap-theme.min.css' %}" />
+
+
+    <!--My theme -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/theme.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'vacs/styles/css/image-picker.css' %}" />
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/image-picker.min.js"></script>
+    <script>
+        function thermometer(goalAmount, progressAmount, animate) {
+            "use strict";
+            var $thermo = $("#thermometer"),
+                $progress = $(".progress", $thermo),
+                $goal = $(".goal", $thermo),
+                percentageAmount;
+
+            goalAmount = goalAmount || parseFloat($goal.text()),
+            progressAmount = progressAmount || parseFloat($progress.text()),
+            percentageAmount = Math.min(Math.round(progressAmount / goalAmount * 1000) / 10, 100); //make sure we have 1 decimal point
+
+            $goal.find(".amount").text();
+            $progress.find(".amount").text();
+
+            $progress.find(".amount").hide();
+            if (animate !== false) {
+                $progress.animate({
+                    "height": percentageAmount + "%"
+                }, 1200, function () {
+                    $(this).find(".amount").fadeIn(200);
+                });
+            } else {
+                $progress.css({
+                    "height": percentageAmount + "%"
+                });
+                $progress.find(".amount").fadeIn(200);
+            }
+        }
+
+        $(document).ready(function () {
+
+            thermometer();
+        });
+    <script>
+    {% if last %}
+        <script>
+            $("select").imagepicker({limit: 1})
+        </script>
+    {% else %}
+        <script>
+            $("select").imagepicker()
+        </script>
+    {% endif %}
+    <script>
+        $(document).on('click', '#submit_button', function (e) {
+            console.log("ENTERED IN THE SUBMIT")
+            var evaluation  = ""
+            var left_symbol = $('input[name=comparator_left]:checked').val();
+            var right_symbol = $('input[name=comparator_right]:checked').val();
+            var symbol_list = ["."+left_symbol+".","."+right_symbol+".",""]
+            var correct = true;
+            for (i = 1; i < 4; i++) {
+                var sortable = $('#sortable'+i+' > li');
+                if (sortable.length == 0){
+                    alert("Please put one video in each of the green boxes");
+                    correct = true;
+                    return false;
+                } else {
+                    evaluation += $('#sortable'+ i +' > li')[0].id;
+                    evaluation += symbol_list[i-1]
+                }
+            }
+            if (correct) {
+                $('#id_evaluation').val(evaluation);
+                $('#form_evaluation').submit();
+            }
+            return false;
+        });
+    </script>
+</head>
+<body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+            data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{% url 'index' %}">GestureClean - ISAT Laboratory</a>
+          {% if user.is_authenticated %}
+          <ul class="nav navbar-nav navbar-right" style="position: relative; right: -200%;">
+              <a class="navbar-brand pull-right" href="{% url 'logout' %}">Logout</a>
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <div class="container theme-showcase" role="main">
+
+    <div class="row">
+        <div class="col-md-1">
+            <strong> Progress: </strong>
+        </div>
+        <div class="progress col-md-11">
+            <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%"><span class="sr-only">{{ progress }}% Complete</span></div>
+        </div>
+    </div>
+    <h1 class ="text-center">Select the gestures you think correspond to: {{ vac.name }}: assignment.current</h1>
+    <div class="row">
+        <div class="col-md-11">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{command.name}}</h3>
+                </div>
+                <div class="panel-body">
+                <select class="image-picker show-html" multiple="multiple">
+                {% for subject in range(1,10) %}
+                    {% with subject|stringformat:"s" as s %}
+                        {% with "vacs/media/S"|add:subject|add:"/"|add:command.code|add:".webm" as video_path %}
+                        <option  value="{{ subject }}">
+                        <div class=col-md-4>
+                            <video width="300" height="225" controls loop preload="auto">
+                                <source src="{% static video_path %}"
+                                type="video/mp4"> Your browser does not support the video player, use Chrome or Firefox.
+                            </video>
+                        </div>
+                        </option>
+                        {% endwith %}
+                    {% endwith %}
+                {% endfor %}
+                </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1">
+            <div id="thermometer">
+                <div class="track">
+                    <div class="goal">
+                        <div class="amount" id="goalAmount">1</div>
+                    </div>
+                <div class="progress">
+                    <div style="display: block;" class="amount" id="progessAmount">{{score.score}}</div>
+                </div>
+                <div class="bulb"><div class="inner-bulb"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <form id="form_evaluation" method="post">{% csrf_token %}
+        <div class="vac-hidden">
+            {{ form.as_p }}
+        </div>
+        <button id="submit_button" class="btn btn-primary btn-block" type="button">Submit</button>
+    </form>
+
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors%}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>-->
+    <!--<script>window.jQuery || document.write('<script src="{% static 'vacs/styles/js/sdfjquery.min.js' %}"><\/script>')</script>-->
+    <script src="{% static 'vacs/styles/js/bootstrap.min.js' %}"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="{% static 'vacs/styles/js/ie10-viewport-bug-workaround.js' %}"></script>-->
+</body>
+</html>

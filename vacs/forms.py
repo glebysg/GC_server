@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from vacs.models import Experiment, Vac, Evaluation
+from vacs.models import Experiment, Vac, Evaluation, Validation
 from django.utils.translation import ugettext, ugettext_lazy as _
 import re
 
@@ -78,3 +78,9 @@ class EvaluationForm(ModelForm):
                 "Please make sure that you have one video in each of the boxes"
             )
         return self.cleaned_data
+
+
+class ValidationForm(ModelForm):
+    class Meta:
+        model = Validation
+        fields = ('selected_lexicons',)
