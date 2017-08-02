@@ -95,6 +95,7 @@ def user_login(request, template_name='vacs/login.html',
                             val_assignment.save()
                         return redirect('validation_edit',
                             val_assignment.pk, val_assignment.current_score.pk)
+                        
                     else:
                         return redirect('finished')
 

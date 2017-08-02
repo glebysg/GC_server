@@ -84,3 +84,13 @@ class ValidationForm(ModelForm):
     class Meta:
         model = Validation
         fields = ('selected_lexicons',)
+
+    def clean(self):
+        cleaned_data = super(ValidationForm, self).clean()
+        selected_lexicons = cleaned_data.get("selected_lexicons")
+        match = re.search('^(([1-9]\.)+|empty)$',selected_lexicons)
+        if not match:
+            raise forms.ValidationError(
+                "Please make sure that you selected a video"
+            )
+        return self.cleaned_data

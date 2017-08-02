@@ -15,7 +15,7 @@ import random
 import pprint as pp
 import json
 import copy
-from vacs.utils import Order
+from vacs.utils import Order, get_critical_score
 
 
 ########################################
@@ -146,6 +146,7 @@ def index(request):
             else:
                 # if empty but not in validation
                 # redirect to waiting mesage
+                "ENTRÉ EN ESTA MIERDA"
                 return redirect('validation_index')
         else:
             print "%%%%%%%%%%%%%%% N %%%%%%%%%%%%%%%%"
@@ -450,6 +451,7 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
     score = Score.objects.get(pk=s_pk)
     participant = Participant.objects.get(user__id=request.user.pk)
     experiment = Experiment.objects.get(pk=participant.experiment.pk)
+    last_vac = False
     if not experiment.in_validation:
         val_indextemplate = loader.get_template('vacs/validation_index.html')
         return HttpResponse(val_indextemplate.render({},request))
@@ -467,23 +469,26 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
         print assignments
 
     if form.is_valid():
-        form.save()
+        saved_validation = form.save()
+        # Add the just saved Validation to the
+        # previous validation in the Assignment
+        assignment.previous_validation = saved_validation
         # Add the curret score to the val assigment
         assignment.evaluated_scores.add(score)
         assignment.save()
 
         # get all the non-validated scores associated with the val assignment
-        scores_to_validate = Scores.objects.get(
+        scores_to_validate = Score.objects.filter(
             experiment = experiment,
             command = assignment.command,
             lexicon_number = assignment.lexicon_number
-            ).excude(id__in=[o.id for o in assignment.evaluated_scores.all()])
+            ).exclude(id__in=[o.id for o in assignment.evaluated_scores.all()])
 
         # if its not empty
         if scores_to_validate:
             # Associate the most critical score that has not
             # been validated
-            new_score = get_critical_score(scores)
+            new_score = get_critical_score(scores_to_validate)
             assignment.current_score = new_score
             assignment.save()
             redirect_assignment = assignment
@@ -501,29 +506,44 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
             redirect_assignment = assignments[0]
             # Associate the most critical score that has not
             # been validated
-            scores = Scores.objects.get(
+            scores = Score.objects.filter(
                 experiment = experiment,
                 command = redirect_assignment.command,
                 lexicon_number = redirect_assignment.lexicon_number
-                ).excude(id__in=[o.id for o in redirect_assignment.evaluated_scores.all()])
+                ).exclude(id__in=[o.id for o in redirect_assignment.evaluated_scores.all()])
             new_score = get_critical_score(scores)
             redirect_assignment.current_score = new_score
             redirect_assignment.save()
         # Redirect to the valdation with a new assignment
         # and its current score
-        return redirect('evaluation_edit',
-        redirect_assignment.pk, redirect_assignment.current_vac.pk)
+        return redirect('validation_edit',
+        redirect_assignment.pk, redirect_assignment.current_score.pk)
+
 
     vac_number = len(Vac.objects.filter(experiment=experiment))
     all_assignments = ValAssignment.objects.filter(user=request.user)
     validation_number = 0
+    if len(assignment.evaluated_scores.all()) == vac_number -1:
+            last_vac = True
     for a in all_assignments:
-        validation_number += len(a.evaluated_scores.all())
+        if a.done:
+            validation_number += vac_number
+        else:
+            validation_number += len(a.evaluated_scores.all())
     if has_role(request.user,'expert'):
     	hundred_percent = experiment.expert_cmd_n*9*vac_number
     elif has_role(request.user,'student'):
     	hundred_percent = experiment.student_cmd_n*9*vac_number
     progress = int(math.floor(validation_number*100/hundred_percent))
+
+    # Decide on the Range:
+    if assignment.previous_validation:
+        str_numbers = assignment.previous_validation.split('.')
+        subjects = []
+        for elem in str_numbers:
+            subjects.append(int(elem))
+    else:
+        subjects = range(1,10)
 
     return render(request, template_name, {
         'form':form,
@@ -531,8 +551,9 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
         'command': assignment.command,
         'score': score,
         'vac': score.vac,
-        'range': range(1,10),
+        'range': subjects,
         'thermometer_value': score.score*100,
+        'last_vac': last_vac,
         'progress': progress})
 
 @has_permission_decorator('update_evaluation')

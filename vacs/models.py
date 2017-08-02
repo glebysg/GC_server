@@ -96,6 +96,17 @@ class Score(models.Model):
             validators=[MinValueValidator(1),
 	    MaxValueValidator(9)])
 
+
+class Validation(models.Model):
+    score = models.OneToOneField(
+        Score,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    selected_lexicons = models.CharField(max_length=100, default='empty')
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
 class Assignment(models.Model):
     command = models.ForeignKey(Command, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -110,13 +121,15 @@ class Assignment(models.Model):
             related_name='evaluated_assigned')
     done = models.BooleanField(default=False)
 
-
 class ValAssignment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     command = models.ForeignKey(Command, on_delete=models.CASCADE)
     lexicon_number = models.IntegerField(
-            validators=[MinValueValidator(1),
-	    MaxValueValidator(9)])
+        validators=[MinValueValidator(1),
+        MaxValueValidator(9)])
+    previous_validation = models.ForeignKey(Validation,
+	on_delete=models.CASCADE, null=True, blank=True,
+        related_name='previous_val_assigned')
     current_score = models.ForeignKey(Score,
 	on_delete=models.CASCADE, null=True, blank=True,
         related_name='current_val_assigned')
@@ -133,15 +146,6 @@ class Evaluation(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     # unique_together = ("assignment","number","vac")
 
-class Validation(models.Model):
-    score = models.OneToOneField(
-        Score,
-        on_delete=models.CASCADE,
-        primary_key=True,
-    )
-    selected_lexicons = models.CharField(max_length=100, default='empty')
-    created = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
 
 
 ########################################
