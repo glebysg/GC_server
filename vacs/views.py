@@ -491,6 +491,8 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
             new_score = get_critical_score(scores_to_validate)
             assignment.current_score = new_score
             assignment.save()
+            #delete
+            print "New SCORE first", new_score
             redirect_assignment = assignment
 
         # if there are no scores
@@ -512,6 +514,8 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
                 lexicon_number = redirect_assignment.lexicon_number
                 ).exclude(id__in=[o.id for o in redirect_assignment.evaluated_scores.all()])
             new_score = get_critical_score(scores)
+            #delete
+            print "New SCORE", new_score
             redirect_assignment.current_score = new_score
             redirect_assignment.save()
         # Redirect to the valdation with a new assignment
@@ -538,9 +542,11 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
 
     # Decide on the Range:
     if assignment.previous_validation:
-        str_numbers = assignment.previous_validation.split('.')
+        str_numbers = assignment.previous_validation.selected_lexicons.split('.')
         subjects = []
-        for elem in str_numbers:
+        for elem in str_numbers[:-1]:
+            # delete
+            print "ELEM", elem
             subjects.append(int(elem))
     else:
         subjects = range(1,10)
