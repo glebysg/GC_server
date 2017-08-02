@@ -36,25 +36,11 @@
                 lexicons += selected_videos[i].id + ".";
             }
             $('#id_selected_lexicons').val(lexicons);
+            console.log(lexicons);
             $('#form_validation').submit();
             return false;
         });
     </script>
-    {% if last_vac %}
-        <script>
-        $( function() {
-          $( "#selectable" ).selectable();
-        });
-        </script>
-    {% else %}
-        <script>
-            $(function() {
-                $("#selectable").bind("mousedown", function(e) {
-                    e.metaKey = true;
-                }).selectable();
-            });
-        </script>
-    {% endif %}
 </head>
 <body>
 
@@ -67,14 +53,14 @@
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
+            <span class="icon-bar"><ected"/span>
           </button>
           <a class="navbar-brand" href="{% url 'index' %}">GestureClean - ISAT Laboratory</a>
           {% if user.is_authenticated %}
           <ul class="nav navbar-nav navbar-right" style="position: relative; right: -200%;">
               <a class="navbar-brand pull-right" href="{% url 'logout' %}">Logout</a>
           </ul>
-          {% endif %}
+          {% endif %}ected"
         </div>
       </div>
     </nav>
@@ -105,11 +91,16 @@
                 {% for subject in range %}
                     {% with subject|stringformat:"s" as s %}
                         {% with "vacs/media/S"|add:s|add:"/"|add:command.code|add:".webm" as video_path %}
-                        <div id="{{s}}" class="col-md-4 ui-widget-content">
-                            <video width="280" height="210" controls loop preload="auto">
-                                <source src="{% static video_path %}"
-                                type="video/mp4"> Your browser does not support the video player, use Chrome or Firefox.
-                            </video>
+                        <div class="col-md-4" style="height: 210px;">
+                            <div class="selectee_parent">
+                                <video width="280" height="210" controls loop preload="auto">
+                                    <source src="{% static video_path %}"
+                                    type="video/mp4"> Your browser does not support the video player, use Chrome or Firefox.
+                                </video>
+                                <div id="{{s}}" class="selectee">
+                                </div>
+                            </div>
+
                         </div>
                         {% endwith %}
                     {% endwith %}
@@ -157,6 +148,24 @@
 
 
     </div> <!-- /container -->
+
+    {% if last_vac %}
+        <script>
+            $(".selectee").click(function() {
+              $(".ui-selected").removeClass("ui-selected");
+              $("video").removeClass("video-selected");
+              $( this ).toggleClass( "ui-selected" );
+              $(this).parent().find('video').toggleClass("video-selected")
+            });
+        </script>
+    {% else %}
+        <script>
+            $(".selectee").click(function() {
+              $( this ).toggleClass( "ui-selected" );
+              $(this).parent().find('video').toggleClass("video-selected")
+            });
+        </script>
+    {% endif %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

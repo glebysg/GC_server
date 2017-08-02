@@ -123,11 +123,17 @@
   z-index: 30;
   box-sizing: content-box;
 }
-.ui-selected{
-    background-color: #337ab7;
+.selectee {
+	position: absolute;
+	height: 165px;
+	width: 280px;
+	top: 0px;
 }
 
-
-.ui-selected video{
+.selectee_parent {
+    position: relative;
+}
+.video-selected{
     -webkit-filter: grayscale(100%);
+    background-color: #337ab7;
 }
