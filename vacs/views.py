@@ -92,6 +92,7 @@ def index(request):
             print "%%%%%%%%%%%%%%% P %%%%%%%%%%%%%%%%"
             # if the current vac is null, add the first one on the list
             participant = Participant.objects.get(user=user)
+            experiment = participant.experiment
             # Get the assignments that are not done
             assignments = Assignment.objects.filter(
                     user = user,
@@ -358,8 +359,12 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
                         evaluation_list.append(clean_evaluation)
                     ord = Order(names_list, evaluation_list)
                     [global_order, ineq, scores] = ord.get_all()
+                    # delete
+                    print "Global order", global_order
+                    print "ineq", ineq
+                    print "scores", scores
                     # Create Scores
-                    for index in range(len(global_order)):
+                    for index in range(len(scores)):
                         lexicon_number = int(global_order[index])
                         score, created = Score.objects.get_or_create(
                             experiment = experiment,
@@ -470,6 +475,8 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
 
     if form.is_valid():
         saved_validation = form.save()
+        if len(saved_validation.selected_lexicons.split('.')) == 2:
+            assignment.done = True
         # Add the just saved Validation to the
         # previous validation in the Assignment
         assignment.previous_validation = saved_validation
@@ -485,7 +492,7 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
             ).exclude(id__in=[o.id for o in assignment.evaluated_scores.all()])
 
         # if its not empty
-        if scores_to_validate:
+        if scores_to_validate and not assignment.done:
             # Associate the most critical score that has not
             # been validated
             new_score = get_critical_score(scores_to_validate)
@@ -495,16 +502,20 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
             print "New SCORE first", new_score
             redirect_assignment = assignment
 
-        # if there are no scores
+        # if there are no scores or the assignment is already done
         else:
             # mark assignment as done
             assignment.done = True
+            assignment.save()
             # get the first assignment that is not 
             # done associated with the user
             assignments = ValAssignment.objects.filter(
                 user = request.user,
                 done = False
             )
+            if not assignments:
+                return redirect('finished')
+
             redirect_assignment = assignments[0]
             # Associate the most critical score that has not
             # been validated
@@ -520,9 +531,11 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
             redirect_assignment.save()
         # Redirect to the valdation with a new assignment
         # and its current score
+        #delete
+        print "CURRENT SCORE", redirect_assignment.current_score
+        print "ASSINGMENT", redirect_assignment
         return redirect('validation_edit',
         redirect_assignment.pk, redirect_assignment.current_score.pk)
-
 
     vac_number = len(Vac.objects.filter(experiment=experiment))
     all_assignments = ValAssignment.objects.filter(user=request.user)
@@ -560,6 +573,7 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
         'range': subjects,
         'thermometer_value': score.score*100,
         'last_vac': last_vac,
+        'height_temp': int(math.ceil(len(subjects)/3.0)*200),
         'progress': progress})
 
 @has_permission_decorator('update_evaluation')
