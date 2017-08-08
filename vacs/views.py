@@ -56,6 +56,8 @@ command_code = {
     11:2,
 }
 
+color = ['primary', 'success', 'warning', 'danger']
+
 ########################################
 ############## FUNCTIONS ###############
 ########################################
@@ -453,10 +455,12 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
 def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.html'):
     template = loader.get_template(template_name)
     assignment = ValAssignment.objects.get(pk=a_pk)
+    current_color = assignment.current_color
     score = Score.objects.get(pk=s_pk)
     participant = Participant.objects.get(user__id=request.user.pk)
     experiment = Experiment.objects.get(pk=participant.experiment.pk)
     last_vac = False
+    changed_assignment = False
     if not experiment.in_validation:
         val_indextemplate = loader.get_template('vacs/validation_index.html')
         return HttpResponse(val_indextemplate.render({},request))
@@ -477,6 +481,7 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
         saved_validation = form.save()
         if len(saved_validation.selected_lexicons.split('.')) == 2:
             assignment.done = True
+            changed_assignment = True
         # Add the just saved Validation to the
         # previous validation in the Assignment
         assignment.previous_validation = saved_validation
@@ -507,7 +512,8 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
             # mark assignment as done
             assignment.done = True
             assignment.save()
-            # get the first assignment that is not 
+            changed_assignment = True
+            # get the first assignment that is not
             # done associated with the user
             assignments = ValAssignment.objects.filter(
                 user = request.user,
@@ -534,6 +540,10 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
         #delete
         print "CURRENT SCORE", redirect_assignment.current_score
         print "ASSINGMENT", redirect_assignment
+        # change assignment color:
+        if changed_assignment:
+            redirect_assignment.current_color = (current_color + 1)%len(color)
+            redirect_assignment.save()
         return redirect('validation_edit',
         redirect_assignment.pk, redirect_assignment.current_score.pk)
 
@@ -564,6 +574,8 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
     else:
         subjects = range(1,10)
 
+    # decide on the color
+
     return render(request, template_name, {
         'form':form,
         'assignment':assignment,
@@ -574,6 +586,7 @@ def validation_update(request, a_pk, s_pk, template_name='vacs/validation_form.h
         'thermometer_value': score.score*100,
         'last_vac': last_vac,
         'height_temp': int(math.ceil(len(subjects)/3.0)*200),
+        'color': color[assignment.current_color],
         'progress': progress})
 
 @has_permission_decorator('update_evaluation')

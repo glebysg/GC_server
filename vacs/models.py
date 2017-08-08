@@ -135,6 +135,7 @@ class ValAssignment(models.Model):
         related_name='current_val_assigned')
     evaluated_scores = models.ManyToManyField(Score, blank=True,
             related_name='evaluated_val_assigned')
+    current_color = models.IntegerField(default=0)
     done = models.BooleanField(default=False)
 
 class Evaluation(models.Model):

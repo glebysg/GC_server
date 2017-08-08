@@ -82,7 +82,7 @@
     </div>
     <div class="row">
         <div class="col-md-10">
-            <div class="panel panel-success">
+            <div class="panel panel-{{ color }}">
                 <div class="panel-heading">
                     <h3 class="panel-title">{{command.name}}</h3>
                 </div>
@@ -116,7 +116,17 @@
               <span class="glass" style="height:{{ height_temp }}px">
                   <strong class="total" style="bottom: {{ thermometer_value }}%">{{ score.score }}</strong>
                   <strong class="total line_thermometer" style="bottom: {{ thermometer_value }}%">______</strong>
+
+                  <strong class="total text_guide" style="bottom:0%">LOWEST</strong>
+                  <strong class="total line_guide" style="bottom:0%">________</strong>
+
+                  <strong class="total text_guide" style="bottom: 100%">HIGHEST</strong>
+                  <strong class="total line_guide" style="bottom:100%">________</strong>
+
                   <span class="amount" style="height: {{ thermometer_value }}%"></span>
+
+
+
               </span>
               <div class="bulb">
                   <span class="red-circle"></span>

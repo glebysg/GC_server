@@ -84,10 +84,22 @@
 }
 
 .line_thermometer {
-    bottom: 30%;
-    left: -36px;
+    left: -45px;
     color: #f34e54;
     z-index: 100;
+}
+
+
+.line_guide {
+    left: 36px;
+    color: black;
+    z-index: 100;
+    font-size: 24px !important;
+}
+
+.text_guide {
+    left: 36px;
+    font-size: 24px !important;
 }
 
 .bulb {
