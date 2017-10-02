@@ -8,10 +8,10 @@ User = get_user_model()
 user = User.objects.get(username='glebys')
 experiment = Experiment.objects.create(
         name='Artificial Experiment',
-        student_n=0,
-        expert_n=1,
+        student_n=10,
+        expert_n=9,
         student_cmd_n=2,
-        expert_cmd_n=28,
+        expert_cmd_n=1,
         owner=user)
 experiment.save()
 

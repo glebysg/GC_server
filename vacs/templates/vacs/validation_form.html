@@ -93,7 +93,7 @@
                         {% with "vacs/media/S"|add:s|add:"/"|add:command.code|add:".webm" as video_path %}
                         <div class="col-md-4" style="height: 210px;">
                             <div class="selectee_parent">
-                                <video width="280" height="210" controls loop preload="auto">
+                                <video autoplay width="280" height="210" controls loop preload="auto">
                                     <source src="{% static video_path %}"
                                     type="video/mp4"> Your browser does not support the video player, use Chrome or Firefox.
                                 </video>
