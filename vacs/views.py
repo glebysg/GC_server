@@ -350,31 +350,62 @@ def generate_scores(request, e_pk, template_name='vacs/scores.html'):
         names_list = ['1','2','3','4', '5', '6', '7', '8', '9']
         for p in participants:
             username = p.user.username
+            print "###### USERNAME: ", username, "###############"
             all_vacs = experiment.vacs.all()
             all_assignments = Assignment.objects.filter(user=p.user)
             for a in all_assignments:
+                print "###### COMMAND: ", a.command.name, "###############"
+                print "###### Lexicon Order: ", a.lexicon_order, "###############"
                 for v in all_vacs:
+                    print "###### VAC: ", v.name, "###############"
                     evaluations = Evaluation.objects.filter(assignment=a, vac=v)
                     evaluation_list = []
+                    # evaluation_IDS_list = []
                     for e in evaluations:
                         clean_evaluation = e.evaluation.replace(".", "")
                         evaluation_list.append(clean_evaluation)
+                        # evaluation_IDS_list.append(e.id)
+                        # evaluation_IDS_list.append(',')
+                    print "###### NAMES AND EVAL ######"
+                    # print evaluation_IDS_list
+                    # print names_list
+                    # print evaluation_list
                     ord = Order(names_list, evaluation_list)
                     [global_order, ineq, scores] = ord.get_all()
-                    # delete
+                    print "eval list", evaluation_list
                     print "Global order", global_order
                     print "ineq", ineq
                     print "scores", scores
                     # Create Scores
                     for index in range(len(scores)):
                         lexicon_number = int(global_order[index])
-                        score, created = Score.objects.get_or_create(
-                            experiment = experiment,
-                            vac = v,
-                            command = a.command,
-                            score = scores[index],
-                            lexicon_number = lexicon_number
-                        )
+                        try:
+                            prev_score = Score.objects.get(
+                                experiment = experiment,
+                                vac = v,
+                                command = a.command,
+                                lexicon_number = lexicon_number
+                            )
+                        except Score.DoesNotExist:
+                            prev_score = None
+                        if prev_score:
+                            score_value = (float(prev_score.score) + scores[index])/2
+                            score = Score.objects.get(
+                                experiment = experiment,
+                                vac = v,
+                                command = a.command,
+                                lexicon_number = lexicon_number
+                            )
+                            score.score = score_value
+                        else:
+                            score_value = scores[index]
+                            score = Score.objects.create(
+                                experiment = experiment,
+                                vac = v,
+                                command = a.command,
+                                score = score_value,
+                                lexicon_number = lexicon_number
+                            )
                         score.save()
         # CHANGE EXPERIMENT STATUS
         experiment.in_validation = True
