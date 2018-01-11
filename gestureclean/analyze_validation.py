@@ -17,32 +17,34 @@ for assignment in all_val_assignments:
     smallest = []
     largest = []
     first_init = True
-    for validation in validations:
-        lexicon_set = map(int, validation.selected_lexicons[:-1].split('.'))
-        if first_init:
-            smallest.append(lexicon_set)
-            largest.append(lexicon_set)
-            first_init = False
-        if len(largest[0]) > len(lexicon_set):
-           largest = [[lexicon_set]]
-        elif len(smallest[0]) < len(lexicon_set):
-           smallest = [[lexicon_set]]
+    all_lexicons = [map(int, validation.selected_lexicons[:-1].split('.')) for validation in validations]
+    all_lexicons.sort(key=len)
+    if len(all_lexicons[0]) != 1:
+        final_choice += 1
 
-        if len(largest[0]) == len(lexicon_set):
-            largest.append(lexicon_set)
-        if len(smallest[0]) == len(lexicon_set):
-            smallest.append(lexicon_set)
-    for elem in largest:
-        if assignment.lexicon_number in elem:
-            ever_selected += 1
-            break
-    for elem in smallest:
+
+    # print all_lexicons
+    # if len(all_lexicons) == 1:
+        # if assignment.lexicon_number in all_lexicons[0]:
+            # ever_selected += 1
+            # final_choice += 1
+        # continue
+    # smallest = [[all_lexicons[0]]]
+    # largest = [[all_lexicons[-1]]]
+    # for selection in all_lexicons[1:-1]:
+        # if len(largest[0]) == len(selection):
+            # largest.append(selection)
+        # if len(smallest[0]) == len(selection):
+            # smallest.append(selection)
+    # for elem in largest:
+        # if assignment.lexicon_number in elem:
+            # ever_selected += 1
+            # break
+    # for elem in smallest:
         # if len(elem) > 1:
             # break
-        if assignment.lexicon_number in elem:
-            final_choice += 1
-            break
-    print "/",
-    print ""
-    print "Ever_selected", ever_selected
-    print "Final_selected", final_choice
+        # if assignment.lexicon_number in elem:
+            # final_choice += 1
+            # break
+# print "Ever_selected", ever_selected
+print "Final_selected", final_choice
