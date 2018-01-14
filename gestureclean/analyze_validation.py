@@ -14,6 +14,8 @@ all_val_assignments = ValAssignment.objects.filter(
         user__participant__experiment__pk=experiment_id).exclude(id__in=exclude_id)
 full_selections = [[0,0] for i in range(6)]
 final_step_selection = 0
+soft_final_step_selection = 0
+hard_final_step_selection = 0
 hard_judge_selections = [[0,0] for i in range(6)]
 soft_judge_selections = [[0,0] for i in range(6)]
 judge_dividing_factor = 1
@@ -36,7 +38,7 @@ for assignment in all_val_assignments:
         avg_first_size.append(len(all_lexicons[0]))
 
     #####################################
-    ###### FOR ALL THE JUDJES ###########
+    ###### FOR ALL THE JUDGES ###########
     #####################################
 
     # Get all the selections per step
@@ -52,15 +54,36 @@ for assignment in all_val_assignments:
         final_step_selection += 1
 
     #####################################
-    ###### DIVIDED BY JUDJE CRITERIA ####
+    ###### DIVIDED BY JUDGE CRITERIA ####
     #####################################
- 
-    # Soft judjes 
+
+    # Soft judges 
     if len(all_lexicons) > judge_dividing_factor:
-    # Rash judjes
-        pass
+    # Get all the selections per step
+        lexicon_index = 0
+        for lexicon in all_lexicons:
+            if assignment.lexicon_number in lexicon:
+                soft_judge_selections[lexicon_index][0] += 1
+            soft_judge_selections[lexicon_index][1] += 1
+            lexicon_index += 1
+
+        # Get selected in the last step 
+        if assignment.lexicon_number in all_lexicons[-1]:
+            soft_final_step_selection += 1
+    # harsh judges
     else:
-        pass
+    # Get all the selections per step
+        lexicon_index = 0
+        for lexicon in all_lexicons:
+            if assignment.lexicon_number in lexicon:
+                hard_judge_selections[lexicon_index][0] += 1
+            hard_judge_selections[lexicon_index][1] += 1
+            lexicon_index += 1
+
+        # Get selected in the last step 
+        if assignment.lexicon_number in all_lexicons[-1]:
+            hard_final_step_selection += 1
+
 avg_first_size = round(np.mean(avg_first_size),2)
 print "Total Selections by step:"
 print full_selections
@@ -73,14 +96,14 @@ print round(comb(8,math.ceil(avg_first_size-1.))/comb(9,math.ceil(avg_first_size
 print "Avg selection step"
 print round(np.mean(avg_selection_step),2)
 
+print "####################################"
+print "Total Soft Selections by step:"
+print soft_judge_selections
+print "Total Soft Selections in the last step:"
+print soft_final_step_selection
+print "Total hard Selections by step:"
+print hard_judge_selections
+print "Total hard Selections in the last step:"
+print hard_final_step_selection
 
-    # if len(all_lexicons[0]) != 1:
-        # full_exclude_id.append(assignment.id)
-        # if assignment.lexicon_number in all_lexicons[0]:
-            # exclude_id.append(assignment.id)
-        # print all_lexicons
-        # print assignment.lexicon_number
-        # print "///////////////////////"
-# print "Final_selected", final_choice
-# print "full excule", full_exclude_id
-# print "excule", exclude_id
+print "####################################"

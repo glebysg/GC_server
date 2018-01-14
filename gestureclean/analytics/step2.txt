@@ -1,0 +1,9 @@
+####################################
+Total Soft Selections by step:
+[[201, 308], [111, 308], [33, 122], [7, 31], [2, 11], [1, 5]]
+Total Soft Selections in the last step:
+65
+Total hard Selections by step:
+[[16, 45], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+Total hard Selections in the last step:
+16
