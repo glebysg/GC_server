@@ -1,0 +1,30 @@
+Command,Score
+Scroll Up,0.5
+Scroll Down,0.8
+Flip Horizontal,0.52
+Flip Vertical,0.66
+Rotate Clockwise,0.85
+Rotate Anti_clockwise,1.0
+Zoom In,0.74
+Zoom Out,0.8
+Switch_panel Left,0.62
+Switch_panel Right,0.77
+Switch_panel Up,0.63
+Switch_panel Down,0.78
+Pan Left,0.85
+Pan Right,0.77
+Pan Up,0.68
+Pan Down,0.9
+Measure with Ruler,0.66
+Delete Ruler,0.57
+PIW Open,0.68
+PIW Close,0.61
+Manual_contrast Increase,0.66
+Manual_contrast Decrease,0.56
+Layout One_panel,0.34
+Layout Two_panels,0.84
+Layout Three_panels,0.58
+Layout Four_panels,0.49
+Contrast_presets Stanadard_1,0.55
+Contrast_presets Stanadard_2,0.58
+Commands over threshold,89.2857142857%
