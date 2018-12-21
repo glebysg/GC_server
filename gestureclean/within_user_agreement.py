@@ -5,6 +5,10 @@ from vacs.utils import Order
 from django.contrib.auth import get_user_model
 import csv
 import numpy as np
+from scipy.stats import entropy
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 # Get all the vacs for the experiment
 experiment_id = 77
@@ -13,7 +17,11 @@ vacs = Vac.objects.filter(experiment__id=77)
 # for each user
 participants = Participant.objects.filter(experiment__id=experiment_id)
 participants = Participant.objects.filter(experiment__id=experiment_id)
+consistency_means=[]
+user_consistency = []
 for participant in participants:
+    within_user_consistency = []
+    within_user_consistency_means = []
     user = participant.user
     assignments = Assignment.objects.filter(user=user)
     # for each assignment
@@ -45,36 +53,48 @@ for participant in participants:
                     g1 = int(evaluation[index])
                     g2 = int(evaluation[index+2])
                     eval_matrix[m_index,g1-1,g2-1] +=1
+                # do the last comparison
+                if evaluation[1] == '<' or evaluation[3] == '<':
+                    m_index = 0
+                else:
+                    m_index = 1
+                g1 = int(evaluation[0])
+                g2 = int(evaluation[4])
+                eval_matrix[m_index,g1-1,g2-1] +=1
 
             # Get the values for each pair (this should be
             # a dict or a array of two).
-            print eval_matrix
             eval_entropy = []
             for i in range(9):
                 for j in range (i+1,9):
-                    pair = []
                     # append pair name
                     # get pair values for "<", ">", "="
                     gt_than = eval_matrix[0,i,j]
                     less_than = eval_matrix[0,j,i]
                     eq = eval_matrix[1,i,j]+eval_matrix[1,j,i]
-                    if gt_than + less_than + eq > 1 :
+                    if gt_than + less_than + eq > 1:
+                        pair = []
                         pair.append(str(i)+"-"+str(j))
-                        pair.append([gt_than + less_than + eq])
-            eval_entropy.append(pair)
-            print eval_entropy
-
-            # Get the entropy for each pair
-
+                        pair.append([gt_than , less_than, eq])
+                        # Get the entropy for each pair
+                        pair.append( entropy(pair[-1]))
+                        eval_entropy.append(pair)
+            within_user_consistency.append(eval_entropy)
             # Get the weighted/normalized mean of the entropy
+            # Per evaluation
+            within_user_consistency_means.append(np.mean([(sum(val_list)*entr)/15.0 \
+                     for pair, val_list, entr in eval_entropy]))
+            # print eval_entropy
+    # Get the mean of all evaluations
+    consistency_means.append(within_user_consistency_means)
+consistency_means = np.array(consistency_means)
+flattened_means = reduce(lambda x,y:x+y , consistency_means)
+print flattened_means
+print "////////////////////////////"
+print "MEAN ENTROPY:", np.mean(flattened_means)
+print "MAX VALUE", np.max(flattened_means)
+print "MEDIAN VALUE", np.median(flattened_means)
+plt.scatter(range(len(flattened_means)), flattened_means)
+plt.show()
 
-            # save in an array
-
-        # get the mean of the  means
-
-
-# make table of  less, greater, equal, and calculate entropy
-# average entropies of each user
-# print a table for each user
-# accumululate the averages of each user and get an total average.
-
+# Get the mean of all users
