@@ -9,6 +9,8 @@ from scipy.stats import entropy
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+from matplotlib import colors
+from matplotlib.ticker import PercentFormatter
 
 # Get all the vacs for the experiment
 experiment_id = 77
@@ -18,10 +20,11 @@ vacs = Vac.objects.filter(experiment__id=77)
 participants = Participant.objects.filter(experiment__id=experiment_id)
 participants = Participant.objects.filter(experiment__id=experiment_id)
 consistency_means=[]
-user_consistency = []
+consistency_means_vac=[]
+test_means = []
 for participant in participants:
-    within_user_consistency = []
     within_user_consistency_means = []
+    within_user_consistency_means_vac = []
     user = participant.user
     assignments = Assignment.objects.filter(user=user)
     # for each assignment
@@ -79,22 +82,73 @@ for participant in participants:
                         # Get the entropy for each pair
                         pair.append( entropy(pair[-1]))
                         eval_entropy.append(pair)
-            within_user_consistency.append(eval_entropy)
-            # Get the weighted/normalized mean of the entropy
-            # Per evaluation
-            within_user_consistency_means.append(np.mean([(sum(val_list)*entr)/15.0 \
-                     for pair, val_list, entr in eval_entropy]))
-            # print eval_entropy
-    # Get the mean of all evaluations
-    consistency_means.append(within_user_consistency_means)
-consistency_means = np.array(consistency_means)
-flattened_means = reduce(lambda x,y:x+y , consistency_means)
-print flattened_means
-print "////////////////////////////"
-print "MEAN ENTROPY:", np.mean(flattened_means)
-print "MAX VALUE", np.max(flattened_means)
-print "MEDIAN VALUE", np.median(flattened_means)
-plt.scatter(range(len(flattened_means)), flattened_means)
-plt.show()
 
-# Get the mean of all users
+            consistency_means.append(sum([(sum(val_list)*entr)/15.0 \
+                     for pair, val_list, entr in eval_entropy]))
+            consistency_means_vac.append((vac.name, sum([(sum(val_list)*entr)/15.0 \
+                     for pair, val_list, entr in eval_entropy])))
+
+consistency_means = np.array(consistency_means)
+print("///////////")
+# exit()
+flattened_means = reduce(lambda x,y:x+y , consistency_means)
+final_mean =np.mean(flattened_means)
+final_median = np.median(flattened_means)
+print "////////////////////////////"
+print "MEAN ENTROPY:", final_mean
+print "MAX VALUE", np.max(flattened_means)
+print "MEDIAN VALUE", final_median
+
+
+###### Scatter plot ###############
+plt.scatter(range(len(flattened_means)), flattened_means, c="#1200c9")
+plt.plot([0,250],[final_mean,final_mean], 'r--', label='Entropy mean')
+plt.xlabel('Evaluation instances (for a command-criteron pair)')
+plt.ylabel('Average entntropy of each evaluation')
+plt.legend()
+plt.savefig('entropy_scatter.png', bbox_inches='tight', dpi=300)
+plt.clf()
+
+
+
+###### Comparative plot plot ###############
+plt.scatter(range(len(test_means)), test_means, c="#1200c9")
+plt.plot([0,250],[final_mean,final_mean], 'r--', label='Entropy mean')
+plt.xlabel('Evaluation instances (for a command-criteron pair)')
+plt.ylabel('Average entntropy of each evaluation')
+plt.legend()
+plt.savefig('test_scatter.png', bbox_inches='tight', dpi=300)
+plt.clf()
+
+###### HISTOGRAM ###############
+n_bins = 20
+# N is the count in each bin, bins is the lower-limit of the bin
+N, bins, patches = plt.hist(flattened_means, bins=n_bins)
+# We'll color code by height, but you could use any scalar
+fracs = N / N.max()
+# we need to normalize the data to 0..1 for the full range of the colormap
+norm = colors.Normalize(fracs.min(), fracs.max())
+# Now, we'll loop through our objects and set the color of each accordingly
+for thisfrac, thispatch in zip(fracs, patches):
+    color = plt.cm.viridis(norm(thisfrac))
+    thispatch.set_facecolor(color)
+plt.xlabel('Evaluations entropy value')
+plt.ylabel('Number of evaluations (of a command-criteron pair)')
+
+plt.savefig('entropy_hist.png', bbox_inches='tight', dpi=300)
+plt.clf()
+
+
+######### PER VAC ###############
+# print consistency_means_vac
+for vac in vacs:
+    # get the entropies that belong to an specific vac
+    print("///////////")
+    filtered_consistency_means = [ent_val for vac_name, ent_val in consistency_means_vac\
+            if vac_name == vac.name]
+    final_mean =np.mean(filtered_consistency_means)
+    final_median = np.median(filtered_consistency_means)
+    print "////////////////////////////"
+    print vac_name+"MEAN ENTROPY:", final_mean
+    print vac_name+"MAX VALUE", np.max(filtered_consistency_means)
+    print vac_name+"MEDIAN VALUE", final_median
