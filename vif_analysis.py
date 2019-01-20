@@ -44,13 +44,13 @@ print '============================\n'
 ############################
 ### Ignore Largest index ###
 ############################
-print '======= Ignore VAC with largest coefficient ========'
+print '======= Ignore VAC with largest coefficient: '+data['vacs'][index]+' ========'
 ignore_index = np.array([index])
 mask = np.sum(np.arange(6).reshape(-1,1) == ignore_index.reshape(1,-1), axis = 1) == 0
 new_vac_scores = vac_scores[:, mask]
 ## VIF
 print 'VIF Coeffecients'
-coefficients = vif_coeffs(vac_scores)
+coefficients = vif_coeffs(new_vac_scores)
 print coefficients, ''
 index2 = np.argmax(coefficients)
 ## Eigen Decomposition
@@ -61,16 +61,23 @@ print 'Last eigen vector'
 print V[-1, :]
 print '============================\n'
 
+if index <= index2:
+    index2 += 1
+else:
+    index += 1
+
+print
+
 ##########################
 ### Ignore 2 largest  ###
 ##########################
-print '======= Ignore two largest coefficients ========'
+print '======= Ignore two largest coefficients: '+data['vacs'][index]+',' +data['vacs'][index2]+ ' ========'
 ignore_index = np.array([index2, index])
 mask = np.sum(np.arange(6).reshape(-1,1) == ignore_index.reshape(1,-1), axis = 1) == 0
 new_vac_scores = vac_scores[:, mask]
 ## VIF
 print 'VIF Coeffecients'
-coefficients = vif_coeffs(vac_scores)
+coefficients = vif_coeffs(new_vac_scores)
 print coefficients, ''
 index3 = np.argmax(coefficients)
 ## Eigen Decomposition
@@ -80,3 +87,4 @@ print S.tolist()
 print 'Last eigen vector'
 print V[-1, :]
 print '============================\n'
+
