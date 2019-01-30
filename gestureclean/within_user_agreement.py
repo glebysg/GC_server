@@ -103,11 +103,13 @@ print "MEDIAN VALUE", final_median
 
 ###### Scatter plot ###############
 plt.scatter(range(len(consistency_means)), consistency_means, c="#1200c9")
-plt.plot([0,250],[final_mean,final_mean], 'r--', label='Entropy mean')
-plt.plot([0,250],[final_median,final_median], dashes=[2,2,10,2], c="#FA9A14", label='Entropy median')
-plt.xlabel('Evaluation instances (for a command-criteron pair)')
+plt.plot([0,250],[final_mean,final_mean], 'c--', label='Entropy mean')
+line = plt.plot([0,250],[final_median,final_median], dashes=[2,2,10,2], c="r", label='Entropy median')
+plt.setp(line, linewidth=3)
+plt.xlabel('Evaluation instances (for a command-criterion pair)')
 plt.ylabel('Average entropy of each evaluation')
 plt.legend()
+# plt.show()
 plt.savefig('entropy_scatter.png', bbox_inches='tight', dpi=300)
 plt.clf()
 
@@ -115,29 +117,29 @@ plt.clf()
 
 ###### HISTOGRAM ###############
 n_bins = 20
-# N is the count in each bin, bins is the lower-limit of the bin
-N, bins, patches = plt.hist(consistency_means, bins=n_bins)
-# We'll color code by height, but you could use any scalar
-fracs = N / N.max()
-# we need to normalize the data to 0..1 for the full range of the colormap
-norm = colors.Normalize(fracs.min(), fracs.max())
-# Now, we'll loop through our objects and set the color of each accordingly
-for thisfrac, thispatch in zip(fracs, patches):
-    color = plt.cm.viridis(norm(thisfrac))
-    thispatch.set_facecolor(color)
-plt.xlabel('Evaluations entropy value')
-plt.ylabel('Number of evaluations (of a command-criteron pair)')
+cm = plt.cm.get_cmap('RdYlBu_r')
 
+# Get the histogramp
+Y,X = np.histogram(consistency_means, n_bins, normed=1)
+x_span = X.max()-X.min()
+C = [cm(((x-X.min())/x_span)) for x in X]
+
+plt.bar(X[:-1],Y,color=C,width=X[1]-X[0],edgecolor='k')
+plt.xlabel('Evaluations entropy value')
+plt.ylabel('Number of evaluations (of a command-criterion pair)')
+# plt.show()
 plt.savefig('entropy_hist.png', bbox_inches='tight', dpi=300)
 plt.clf()
 
 
 ######### PER VAC ###############
 # print consistency_means_vac
+matplotlib.rcParams['lines.linewidth'] = 2
 vac_evals = []
 index = 0
 fig = plt.figure()
 gs1 = gridspec.GridSpec(3, 2)
+first = True
 for vac in vacs:
     # get the entropies that belong to an specific vac
     print("///////////")
@@ -152,8 +154,14 @@ for vac in vacs:
     print vac.name+" MEDIAN VALUE", final_median
     small_plt = fig.add_subplot(gs1[index])
     small_plt.scatter(range(len(filtered_consistency_means)), filtered_consistency_means, c="#1200c9")
-    small_plt.plot([0,42],[final_mean,final_mean], 'r--', label='Entropy mean')
-    small_plt.plot([0,42],[final_median,final_median], dashes=[2,2,15,2], c="#FA9A14", label='Entropy median')
+    if first:
+        l1 = small_plt.plot([0,42],[final_mean,final_mean], 'c--', label='Entropy mean')
+        l2 = small_plt.plot([0,42],[final_median,final_median], dashes=[2,2,15,2], c="r", label='Entropy median')
+        plt.setp(l2, linewidth=2)
+        first = False
+    else:
+        l1 = small_plt.plot([0,42],[final_mean,final_mean], 'c--')
+        l2 = small_plt.plot([0,42],[final_median,final_median], dashes=[2,2,15,2], c="r")
     vac_name = vac_name
     if vac_name == 'Complexity':
         vac_name = 'Simplicity'
@@ -161,10 +169,9 @@ for vac in vacs:
         vac_name = 'Economy of movement'
     small_plt.set_title(vac.name)
     index +=1
-gs1.tight_layout(fig)
-fig.set_xlabel('Evaluation instances (for a command-criteron pair)')
-fig.set_ylabel('Average entropy of each evaluation')
-fig.legend()
-fig.savefig('all_entropy_scatter.png', dpi=300)
+gs1.tight_layout(fig, rect=(0,0,1,0.90))
+fig.legend(loc='upper left')
+# plt.show()
+fig.savefig('all_entropy_scatter.png', dpi=600)
 print(stats.f_oneway(*vac_evals))
 
